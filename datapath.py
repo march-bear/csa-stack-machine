@@ -20,8 +20,6 @@ class Datapath:
     alu_value = None
     arg_value = None
 
-    _tick: int = None
-
 
     def __init__(self, data, input_buf: list) -> None:
         self.data_mem = Memory(data, DATA_MEM_SIZE)
@@ -35,11 +33,8 @@ class Datapath:
         self.alu_value = 0
         self.arg_value = 0
 
-        _tick = 0
 
-    
-
-    def alu(self, lsel: LAluSel, rsel: RAluSel, opsel: AluOpSel):
+    def alu(self, lsel: LAluSel, rsel: RAluSel, opsel: AluOpSel = AluOpSel.PLUS):
         left = self.stack.peek() if (lsel == LAluSel.STACK) else 0
         right = self.TOS if (rsel == RAluSel.TOS) else 0
 
@@ -89,3 +84,6 @@ class Datapath:
     def is_tos_neg(self):
         return self.TOS < 0
     
+
+    def output(self) -> None:
+        self.output_buf.append(self.alu_value)
