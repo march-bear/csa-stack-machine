@@ -1,6 +1,6 @@
 from memory import Memory
 from stack import Stack
-from sels import AluOpSel, TosInSel, LAluSel, RAluSel
+from sels import AluOpSel, TosInSel, LAluSel, RAluSel, AluModSel
 
 
 DATA_MEM_SIZE = 64
@@ -34,11 +34,13 @@ class Datapath:
         self.arg_value = 0
 
 
-    def alu(self, lsel: LAluSel, rsel: RAluSel, opsel: AluOpSel = AluOpSel.PLUS):
+    def alu(self, lsel: LAluSel, rsel: RAluSel, opsel: AluOpSel = AluOpSel.PLUS, modsel: AluModSel = AluModSel.NONE):
         left = self.stack.peek() if (lsel == LAluSel.STACK) else 0
         right = self.TOS if (rsel == RAluSel.TOS) else 0
 
-        return left + right if (opsel == AluOpSel.PLUS) else left - right
+        res = left + right if (opsel == AluOpSel.PLUS) else left - right
+
+        return res % 2 if (modsel == AluModSel.MOD2) else res
     
 
     def latch_tos(self, sel: TosInSel):
