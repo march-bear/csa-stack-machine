@@ -79,6 +79,13 @@ class ControlUnit:
                 self.dp.arg_value = self.IA
                 self.dp.latch_tos(TosInSel.ARG)
                 self.tick()
+            case Opcode.PUSH_MEM:
+                self.dp.alu(LAluSel.ZERO, RAluSel.TOS)
+                self.dp.push_stack()
+                self.tick()
+                self.dp.arg_value = self.IA
+                self.dp.latch_tos(TosInSel.ARG)
+                self.tick()
                 self.dp.alu(LAluSel.ZERO, RAluSel.TOS)
                 self.dp.latch_ar()
                 self.tick()

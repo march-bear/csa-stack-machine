@@ -22,3 +22,7 @@ class RAluSel(Enum):
     ZERO = 0
     TOS = 1
     
+
+class AluModSel(Enum):
+    NONE = 0
+    MOD2 = 1

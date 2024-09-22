@@ -13,6 +13,7 @@ class Opcode(str, Enum):
     JG = "jg"
 
     PUSH = "push"
+    PUSH_MEM = "push_mem"
     POP = "pop"
 
     HALT = "halt"
