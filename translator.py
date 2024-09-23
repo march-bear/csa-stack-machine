@@ -15,6 +15,7 @@ def translate_data_section(lines: list, first_line: int = 1):
     data = []
     labels = {}
     last_undefined_label_info = None
+    
 
     for line_number, line in enumerate(lines[first_line:]):
         token = line.strip()
@@ -23,12 +24,13 @@ def translate_data_section(lines: list, first_line: int = 1):
             pass
         elif (token == "section .data"):
             assert len(data > 0), f"section .data doesn't contain any data"
+            break
         elif (re.fullmatch(LABEL_PATTERN, token)):
             assert last_undefined_label_info is not None, f"line {last_undefined_label_info["line"]}: label {last_undefined_label_info["name"]} does not indicate data"
             label_name = token.rstrip(':')
             assert label_name not in labels.keys(), f"line {line_number}: second label declaration {label_name}"
 
-            last_undefined_label_info = {"name": label_name, "line": line_number}
+            last_undefined_label_info = {"name": label_name, "line": line_number, "addr": len(data)}
         elif (re.fullmatch(WORD_LINE_PATTERN, token, flags=re.IGNORECASE)):
             args_line = token.split(maxsplit=1)[1]
             if (re.fullmatch(INTEGER_PATTERN, args_line)):
@@ -39,13 +41,19 @@ def translate_data_section(lines: list, first_line: int = 1):
 
                 data.append(int(length))
                 [data.append(ord(ch)) for ch in string]
+            else: 
+                raise Exception(f"line {line_number}: wrong argument format for statement 'word'")
+
+            if (last_undefined_label_info is not None):
+                labels[last_undefined_label_info["name"]] = last_undefined_label_info["addr"]
+
         else:
             raise Exception(f"line {line_number} cannot be interpreted as a data line:\n{line}")
     
     assert last_undefined_label_info is not None, \
         f"line {last_undefined_label_info["line"]}: label {last_undefined_label_info["name"]} does not indicate data"
     
-    return [], -1, []
+    return data, line_number, labels
 
 
 def translate_code_section(lines: list, first_line: int = 0, data_labels: dict = {}):
