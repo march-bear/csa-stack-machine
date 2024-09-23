@@ -6,16 +6,52 @@ MACHINE_WORD_MAX_POS =  0x0FFFFFFF
 
 LABEL_PATTERN = r'[a-zA-Z_][a-zA-Z0-9_]*:'
 COMMAND_LINE_PATTERN = r'[a-zA-Z][a-zA-Z0-9]*(?: +\w+)?'
+WORD_LINE_PATTERN = r'word(?: +.+)'
 INTEGER_PATTERN = r'\-?(?:0|[1-9][0-9]*)'
+STRING_DEFINITION_PATTERN = r'\-?(?:0|[1-9][0-9]*), *(?:\'[^\']*\'|\"[^\"]*\")'
 
 
 def translate_data_section(lines: list, first_line: int = 1):
+    data = []
+    labels = {}
+    last_undefined_label_info = None
+
+    for line_number, line in enumerate(lines[first_line:]):
+        token = line.strip()
+
+        if (token == ''):
+            pass
+        elif (token == "section .data"):
+            assert len(data > 0), f"section .data doesn't contain any data"
+        elif (re.fullmatch(LABEL_PATTERN, token)):
+            assert last_undefined_label_info is not None, f"line {last_undefined_label_info["line"]}: label {last_undefined_label_info["name"]} does not indicate data"
+            label_name = token.rstrip(':')
+            assert label_name not in labels.keys(), f"line {line_number}: second label declaration {label_name}"
+
+            last_undefined_label_info = {"name": label_name, "line": line_number}
+        elif (re.fullmatch(WORD_LINE_PATTERN, token, flags=re.IGNORECASE)):
+            args_line = token.split(maxsplit=1)[1]
+            if (re.fullmatch(INTEGER_PATTERN, args_line)):
+                data.append(int(args_line))
+            elif (re.fullmatch(STRING_DEFINITION_PATTERN, args_line)):
+                length, _string = args_line.split(", ", maxsplit=1)
+                string = _string.strip()[1:-1]
+
+                data.append(int(length))
+                [data.append(ord(ch)) for ch in string]
+        else:
+            raise Exception(f"line {line_number} cannot be interpreted as a data line:\n{line}")
+    
+    assert last_undefined_label_info is not None, \
+        f"line {last_undefined_label_info["line"]}: label {last_undefined_label_info["name"]} does not indicate data"
+    
     return [], -1, []
 
 
-def translate_code_section(lines: list, first_line: int = 0, data_labels: list = []):
+def translate_code_section(lines: list, first_line: int = 0, data_labels: dict = {}):
     result = []
-    instr_labels = []
+    instr_labels = {}
+    last_undefined_instr_label_info = None
     
     instr_counter = 0
     for line_number, line in enumerate(lines[first_line:]):
@@ -26,11 +62,13 @@ def translate_code_section(lines: list, first_line: int = 0, data_labels: list =
         if (token == ''):
             pass
         elif (re.fullmatch(LABEL_PATTERN, token)):
-            if (len(instr_labels) > 0 and instr_labels[-1]["instr"] == None):
-                raise Exception(f"line {instr_labels[-1]["line"]}: label {instr_labels[-1]["name"]} does not indicate instructions")
+            assert last_undefined_instr_label_info is not None, \
+                f"line {last_undefined_instr_label_info["line"]}: label {last_undefined_instr_label_info["name"]} does not indicate instructions"
             
             label_name = token.rstrip(':')
-            instr_labels.append({"name": label_name, "instr": None, "line": line_number})
+            assert label_name not in instr_labels.keys(), f"line {line_number}: second label declaration {label_name}"
+
+            last_undefined_instr_label_info = {"name": label_name, "line": line_number}
         elif (re.fullmatch(COMMAND_LINE_PATTERN, token)):
             args_line = None
             if (len(_splited_token := token.split(maxsplit=1)) == 1):
@@ -50,7 +88,9 @@ def translate_code_section(lines: list, first_line: int = 0, data_labels: list =
                         arg = int(args_line)
                     elif (args_line[0] == '(' and args_line[-1] == ')' and re.fullmatch(LABEL_PATTERN, args_line[1:-1])):
                         label_name = args_line[1:-1]
-                        if (data_labels.)
+                        if (label_name in data_labels.keys()):
+                            arg = data_labels[label_name]
+                            command = Opcode.PUSH_MEM
                     else:
                         raise Exception(f"line {line_number}: command {command} takes one argument in format integer_number or (label_name)")
                     
@@ -58,15 +98,15 @@ def translate_code_section(lines: list, first_line: int = 0, data_labels: list =
             if (arg):
                 result[-1]["arg"] = arg
 
-            if (len(instr_labels) > 0 and instr_labels[-1]["instr"] == None):
-                instr_labels[-1]["instr"] = instr_counter
+            if (last_undefined_instr_label_info != None):
+                instr_labels.append({"name": last_undefined_instr_label_info["name"], "instr": line_number})
             
             instr_counter += 1
         else:
             raise Exception(f"line {line_number} cannot be interpreted as a code line:\n{line}")
     
-    if (len(instr_labels) > 0 and instr_labels[-1]["instr"] == None):
-        raise Exception(f"line {instr_labels[-1]["line"]}: label {instr_labels[-1]["name"]} does not indicate instructions")
+    assert last_undefined_instr_label_info is not None, \
+        f"line {last_undefined_instr_label_info["line"]}: label {last_undefined_instr_label_info["name"]} does not indicate instructions"
     
     return result
 
