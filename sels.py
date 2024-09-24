@@ -11,6 +11,7 @@ class TosInSel(Enum):
     MEM = 1
     ALU = 2
     INPUT = 3
+    BR = 4
 
 
 class LAluSel(Enum):

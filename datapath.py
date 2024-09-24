@@ -14,6 +14,7 @@ class Datapath:
     stack: Stack = None
 
     AR = None
+    BR = None
     TOS = None
 
     input_buf: list = None
@@ -29,6 +30,7 @@ class Datapath:
 
         self.AR = 0
         self.TOS = 0
+        self.BR = 0
 
         self.input_buf = input_buf.copy()
 
@@ -55,11 +57,15 @@ class Datapath:
                 self.TOS = self.mem_oe()
             case TosInSel.ALU:
                 self.TOS = self.alu_value
+            case TosInSel.BR:
+                self.TOS = self.BR
             case TosInSel.INPUT:
                 assert len(self.input_buf) > 0, "input is empty"
 
                 self.TOS = self.input_buf.pop()
 
+    def latch_br(self):
+        self.BR = self.stack.peek()
 
     def mem_oe(self):
         return self.data_mem.read(self.AR)
