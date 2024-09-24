@@ -12,14 +12,16 @@ class ControlUnit:
     instr_mem: Memory = None
 
     # IA - instr_argument
-    # IP - instr_pointer
     IA = None
+    # IP - instr_pointer
     IP = None
 
     _tick = None
 
 
     def __init__(self, dp: Datapath, data: list) -> None:
+        self.IA = 0
+        self.IP = 0
         self.dp = dp
         self.instr_mem = Memory(data, INSTR_MEM_SIZE)
 
@@ -34,10 +36,16 @@ class ControlUnit:
         if (sel):
             assert 0 <= self.IA < INSTR_MEM_SIZE, f"out of memory: {self.IA}"
             self.IP = self.IA
+        else:
+            self.IP += 1
 
 
     def decode_and_execute_instruction(self):
-        instr = self.instr_mem.read(self.IP)
+        if ((instr := self.instr_mem.read(self.IP)) == 0):
+            instr = {"opcode": "halt"}
+        if ("arg" in instr.keys()):
+            self.IA =  instr["arg"]
+
         opcode = instr["opcode"]
 
         match opcode:
@@ -45,13 +53,14 @@ class ControlUnit:
                 raise StopIteration()
             case Opcode.JMP:
                 self.jump_if(True)
-                self.tick()
             case Opcode.JZ:
-                self.jump_if(self.dp.is_tos_zero)
-                self.tick()
+                self.jump_if(self.dp.is_tos_zero())
             case Opcode.JG:
-                self.jump_if(not self.dp.is_tos_neg)
-                self.tick()
+                self.jump_if(not self.dp.is_tos_neg())
+            case _:
+                self.IP += 1
+
+        self.tick()
 
         match opcode:
             case Opcode.DUP:
@@ -126,6 +135,9 @@ class ControlUnit:
                 self.dp.pop_stack()
                 self.tick()
             case Opcode.PRINT:
-                self.dp.alu(LAluSel.ZERO, RAluSel.TOS, AluOpSel.PLUS)
+                self.dp.alu(LAluSel.ZERO, RAluSel.TOS)
                 self.dp.output()
+                self.tick()
+            case Opcode.INPUT:
+                self.dp.latch_tos(TosInSel.INPUT)
                 self.tick()

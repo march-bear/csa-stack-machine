@@ -24,7 +24,7 @@ class Datapath:
     arg_value = None
 
 
-    def __init__(self, data, input_buf: list) -> None:
+    def __init__(self, data: list = [], input_buf: list = []) -> None:
         self.data_mem = Memory(data, DATA_MEM_SIZE)
         self.stack = Stack(STACK_SIZE)
 
@@ -33,6 +33,7 @@ class Datapath:
         self.BR = 0
 
         self.input_buf = input_buf.copy()
+        self.output_buf = []
 
         self.alu_value = 0
         self.arg_value = 0
@@ -45,8 +46,8 @@ class Datapath:
         res = (left + right if (opsel == AluOpSel.PLUS) else left - right) & MACHINE_WORD_MASK
         if (res > MACHINE_WORD_MAX_POS):
             res -= MACHINE_WORD_MASK + 1
-
-        return res % 2 if (modsel == AluModSel.MOD2) else res
+        
+        self.alu_value = res % 2 if (modsel == AluModSel.MOD2) else res
     
 
     def latch_tos(self, sel: TosInSel):
@@ -60,12 +61,13 @@ class Datapath:
             case TosInSel.BR:
                 self.TOS = self.BR
             case TosInSel.INPUT:
-                assert len(self.input_buf) > 0, "input is empty"
+                # assert len(self.input_buf) > 0, "input is empty"
+                self.TOS = self.input_buf.pop(0) if len(self.input_buf) > 0 else 0
 
-                self.TOS = self.input_buf.pop()
 
     def latch_br(self):
         self.BR = self.stack.peek()
+
 
     def mem_oe(self):
         return self.data_mem.read(self.AR)
