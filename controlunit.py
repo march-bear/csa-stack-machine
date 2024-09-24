@@ -72,6 +72,20 @@ class ControlUnit:
                 self.dp.alu(LAluSel.ZERO, RAluSel.TOS, modsel=AluModSel.MOD2)
                 self.dp.latch_tos(TosInSel.ALU)
                 self.tick()
+            case Opcode.SWAP:
+                self.dp.latch_br()
+                self.tick()
+                self.dp.alu(LAluSel.ZERO, RAluSel.TOS)
+                self.dp.push_stack()
+                self.tick()
+                self.dp.latch_tos(TosInSel.BR)
+                self.tick()
+            case Opcode.PUSH_BY:
+                self.dp.alu(LAluSel.ZERO, RAluSel.TOS)
+                self.dp.latch_ar()
+                self.tick()
+                self.dp.latch_tos(TosInSel.MEM)
+                self.tick()
             case Opcode.PUSH:
                 self.dp.alu(LAluSel.ZERO, RAluSel.TOS)
                 self.dp.push_stack()

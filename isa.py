@@ -4,6 +4,7 @@ class Opcode(str, Enum):
     DUP = "dup"
     ADD = "add"
     DEC = "dec"
+    SWAP = "swap"
     MOD2 = "mod2"
     PRINT = "print"
     INPUT = "input"
@@ -12,6 +13,7 @@ class Opcode(str, Enum):
     JZ = "jz"
     JG = "jg"
 
+    PUSH_BY = "push_by"
     PUSH = "push"
     PUSH_MEM = "push_mem"
     POP = "pop"
