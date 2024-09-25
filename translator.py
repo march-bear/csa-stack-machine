@@ -88,7 +88,7 @@ def translate_code_section(lines: list, first_line: int = 0):
             if undef_label is not None:
                 raise EmptyLabelException(undef_label["line"], undef_label["name"])
 
-            label_name = token.rstrip(':')
+            label_name = token.rstrip(":")
             if label_name in labels.keys():
                 raise SecondLabelDeclarationException(line_num, label_name)
 
@@ -103,7 +103,7 @@ def translate_code_section(lines: list, first_line: int = 0):
             arg = None
             match command := command.lower():
                 case (
-                    Opcode.DUP 
+                    Opcode.DUP
                     | Opcode.ADD
                     | Opcode.DEC
                     | Opcode.SWAP
@@ -125,7 +125,7 @@ def translate_code_section(lines: list, first_line: int = 0):
                     arg = args_line
                 case Opcode.PUSH:
                     if args_line is None:
-                        args_line = ''
+                        args_line = ""
 
                     if re.fullmatch(INTEGER_PATTERN, args_line):
                         arg = int(args_line)
@@ -134,7 +134,8 @@ def translate_code_section(lines: list, first_line: int = 0):
                     else:
                         raise ArgumentsException(line_num, line, command, ["integer, label_name"])
                 case Opcode.POP:
-                    if args_line is None: args_line = ''
+                    if args_line is None:
+                        args_line = ""
 
                     if re.fullmatch(LABEL_NAME_PATTERN, args_line):
                         arg = args_line
@@ -148,7 +149,7 @@ def translate_code_section(lines: list, first_line: int = 0):
             if arg is not None:
                 if type(arg) is int:
                     arg = arg & MACHINE_WORD_MASK
-                    if (arg > MACHINE_WORD_MAX_POS):
+                    if arg > MACHINE_WORD_MAX_POS:
                         arg -= MACHINE_WORD_MASK + 1
                 instr_info["arg"] = arg
             instr_info["term"] = [line_num, char_number, token]
@@ -239,7 +240,7 @@ def main(code, target):
         with open(output_file, "w") as ofile:
             ofile.write("[" + ",\n ".join(buf) + "]")
 
-        print("LoC:", len(program.split('\n')), "code instr:", len(code))
+        print("LoC:", len(program.split("\n")), "code instr:", len(code))
     except Exception as ex:
         print(f"error: {ex.__class__.__name__}: {ex}\n")
 
