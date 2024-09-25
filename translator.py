@@ -36,7 +36,7 @@ def translate_data_section(lines: list, first_line: int = 1):
         if token == "":
             pass
         elif token == "section .code":
-            assert len(data) > 0, f"section .data doesn't contain any data"
+            assert len(data) > 0, "section .data doesn't contain any data"
             break
         elif re.fullmatch(LABEL_PATTERN, token):
             if undef_label is not None:
@@ -193,7 +193,7 @@ def replace_label_names(code, instr_labels, data_labels):
 
                 instr["arg"] = instr_labels[instr["arg"]]["instr"]
             case Opcode.POP | Opcode.PUSH:
-                if type(instr["arg"]) is str:
+                if isinstance(instr["arg"], str):
                     if instr["arg"] not in data_labels.keys():
                         raise LabelIsNotExistError(instr["arg"], "data")
 

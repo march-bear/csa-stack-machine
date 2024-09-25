@@ -9,14 +9,39 @@ in_source: |-
 in_stdin: |-
   foo
 out_code: |-
-  [{"opcode": "input", "term": [1, 4, "input"]},
-   {"opcode": "jz", "term": [2, 4, "jz end"], "arg": 4},
-   {"opcode": "print", "term": [3, 4, "print"]},
-   {"opcode": "jmp", "term": [4, 4, "jmp loop"], "arg": 0},
-   {"opcode": "halt", "term": [6, 4, "halt"]}]
+  [{"opcode": "input", "term": [2, 4, "input"]},
+   {"opcode": "jz", "arg": 4, "term": [3, 4, "jz end"]},
+   {"opcode": "print", "term": [4, 4, "print"]},
+   {"opcode": "jmp", "arg": 0, "term": [5, 4, "jmp loop"]},
+   {"opcode": "halt", "term": [7, 4, "halt"]}]
 out_stdout: |
   LoC: 7 code instr: 5
   ============================================================
   output: foo
   instr_counter: 14 ticks: 35
 out_log: |
+DEBUG:root:TICK:   0 IP:   0 AR:   0 MEM_OUT:   0 INSTR: input      TOS:   0 STACK: [] 
+DEBUG:root:input: 102
+DEBUG:root:TICK:   2 IP:   1 AR:   0 MEM_OUT:   0 INSTR: jz 4       TOS: 102 STACK: [0]
+DEBUG:root:TICK:   4 IP:   2 AR:   0 MEM_OUT:   0 INSTR: print      TOS: 102 STACK: [0]
+DEBUG:root:output: [] << 102
+DEBUG:root:TICK:   8 IP:   3 AR:   0 MEM_OUT:   0 INSTR: jmp 0      TOS:   0 STACK: [] 
+DEBUG:root:TICK:  10 IP:   0 AR:   0 MEM_OUT:   0 INSTR: input      TOS:   0 STACK: [] 
+DEBUG:root:input: 111
+DEBUG:root:TICK:  12 IP:   1 AR:   0 MEM_OUT:   0 INSTR: jz 4       TOS: 111 STACK: [0]
+DEBUG:root:TICK:  14 IP:   2 AR:   0 MEM_OUT:   0 INSTR: print      TOS: 111 STACK: [0]
+DEBUG:root:output: [102] << 111
+DEBUG:root:TICK:  18 IP:   3 AR:   0 MEM_OUT:   0 INSTR: jmp 0      TOS:   0 STACK: [] 
+DEBUG:root:TICK:  20 IP:   0 AR:   0 MEM_OUT:   0 INSTR: input      TOS:   0 STACK: [] 
+DEBUG:root:input: 111
+DEBUG:root:TICK:  22 IP:   1 AR:   0 MEM_OUT:   0 INSTR: jz 4       TOS: 111 STACK: [0]
+DEBUG:root:TICK:  24 IP:   2 AR:   0 MEM_OUT:   0 INSTR: print      TOS: 111 STACK: [0]
+DEBUG:root:output: [102, 111] << 111
+DEBUG:root:TICK:  28 IP:   3 AR:   0 MEM_OUT:   0 INSTR: jmp 0      TOS:   0 STACK: [] 
+DEBUG:root:TICK:  30 IP:   0 AR:   0 MEM_OUT:   0 INSTR: input      TOS:   0 STACK: [] 
+WARNING:root:input: EMPTY!
+DEBUG:root:TICK:  32 IP:   1 AR:   0 MEM_OUT:   0 INSTR: jz 4       TOS:   0 STACK: [0]
+DEBUG:root:TICK:  34 IP:   4 AR:   0 MEM_OUT:   0 INSTR: halt       TOS:   0 STACK: [0]
+INFO:root:Simulation ended!
+INFO:root:output_buffer (string): foo
+INFO:root:output_buffer (values): [102, 111, 111]
