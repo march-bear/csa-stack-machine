@@ -24,4 +24,3 @@ class Opcode(str, Enum):
 
     def __str__(self):
         return str(self.value)
-    

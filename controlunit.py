@@ -23,26 +23,23 @@ class ControlUnit:
 
         self._tick = 0
 
-
     def tick(self) -> None:
         self._tick += 1
 
-
     def jump_if(self, sel: bool) -> None:
-        if (sel):
+        if sel:
             assert 0 <= self.IA < len(self.instr_mem), f"out of memory: {self.IA}"
             self.IP = self.IA
         else:
             self.IP += 1
         self.tick()
 
-
     def decode_and_execute_instruction(self):
         assert 0 <= self.IP < len(self.instr_mem), f"out of memory: {self.IP}"
         instr = self.instr_mem[self.IP]
 
-        if ("arg" in instr.keys()):
-            self.IA =  instr["arg"]
+        if "arg" in instr.keys():
+            self.IA = instr["arg"]
         opcode = instr["opcode"]
 
         self.tick()
@@ -58,7 +55,6 @@ class ControlUnit:
                 self.jump_if(not self.dp.is_tos_neg())
             case _:
                 self.IP += 1
-
 
         match opcode:
             case Opcode.DUP:
@@ -159,7 +155,6 @@ class ControlUnit:
                 self.dp.latch_tos(TosInSel.INPUT)
                 self.tick()
 
-
     def __repr__(self):
         state_repr = "TICK: {:3} IP: {:3} AR: {:3} MEM_OUT: {:3} INSTR: {:10} TOS: {:3} STACK: {}".format(
             self._tick,
@@ -170,5 +165,5 @@ class ControlUnit:
             self.dp.TOS,
             self.dp.stack.data,
         )
-        
+
         return state_repr

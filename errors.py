@@ -24,7 +24,7 @@ class InterpretationException(Exception):
 
 class ArgumentsException(Exception):
     def __init__(self, line_number, line, command_name, formats: list = []) -> None:
-        if (len(formats) == 0):
+        if len(formats) == 0:
             self.message = f"line {line_number}: command {command_name} doesn't require any arguments:\n {line}"
         else:
             self.message = f"line {line_number}: command {command_name} takes 1 argument in format {', or'.join(['<' + str(form) + '>' for form in formats])}:\n{line}"

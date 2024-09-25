@@ -3,10 +3,10 @@ from memory import Memory, Stack
 from sels import AluOpSel, TosInSel, LAluSel, RAluSel, AluModSel
 
 
-DATA_MEM_SIZE =         64
-STACK_SIZE =            64
-MACHINE_WORD_MASK =     0xFFFFFFFF 
-MACHINE_WORD_MAX_POS =  0x0FFFFFFF
+DATA_MEM_SIZE = 64
+STACK_SIZE = 64
+MACHINE_WORD_MASK = 0xFFFFFFFF 
+MACHINE_WORD_MAX_POS = 0x0FFFFFFF
 
 
 class Datapath:
@@ -23,7 +23,6 @@ class Datapath:
     alu_value = None
     arg_value = None
 
-
     def __init__(self, data: list = [], input_buf: list = []) -> None:
         self.data_mem = Memory(data, DATA_MEM_SIZE)
         self.stack = Stack(STACK_SIZE)
@@ -38,18 +37,16 @@ class Datapath:
         self.alu_value = 0
         self.arg_value = 0
 
-
     def alu(self, lsel: LAluSel, rsel: RAluSel, opsel: AluOpSel = AluOpSel.PLUS, modsel: AluModSel = AluModSel.NONE):
         left = self.stack.peek() if (lsel == LAluSel.STACK) else 0
         right = self.TOS if (rsel == RAluSel.TOS) else 0
 
         res = (left + right if (opsel == AluOpSel.PLUS) else left - right) & MACHINE_WORD_MASK
-        if (res > MACHINE_WORD_MAX_POS):
+        if res > MACHINE_WORD_MAX_POS:
             res -= MACHINE_WORD_MASK + 1
 
         self.alu_value = res % 2 if (modsel == AluModSel.MOD2) else res
     
-
     def latch_tos(self, sel: TosInSel):
         match sel:
             case TosInSel.ARG:
@@ -68,41 +65,32 @@ class Datapath:
                     self.TOS = 0
                     logging.warning("input: EMPTY!")
 
-
     def latch_br(self) -> None:
         self.BR = self.stack.peek()
 
-
     def mem_oe(self):
         return self.data_mem.read(self.AR)
-    
 
     def mem_wr(self) -> None:
         self.data_mem.write(self.AR, self.alu_value)
-
 
     def latch_ar(self) -> None:
         assert 0 <= self.alu_value < DATA_MEM_SIZE, f"out of memory: {self.alu_value}"
 
         self.AR = self.alu_value
 
-
     def pop_stack(self) -> None:
         self.stack.pop()
 
-
     def push_stack(self) -> None:
         self.stack.push(self.alu_value)
-
     
     def is_tos_zero(self):
         return self.TOS == 0
     
-
     def is_tos_neg(self):
         return self.TOS < 0
     
-
     def output(self) -> None:
         logging.debug("output: %s << %s", str(self.output_buf), repr(self.alu_value))
         self.output_buf.append(self.alu_value)

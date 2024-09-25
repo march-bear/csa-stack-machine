@@ -34,4 +34,3 @@ def test_translator_and_machine(golden, caplog):
         assert code == golden.out["out_code"]
         assert stdout.getvalue() == golden.out["out_stdout"]
         assert caplog.text == golden.out["out_log"]
-        
