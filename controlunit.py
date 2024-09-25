@@ -4,12 +4,9 @@ from isa import Opcode
 from sels import LAluSel, RAluSel, AluOpSel, TosInSel, AluModSel
 
 
-INSTR_MEM_SIZE = 64
-
-
 class ControlUnit:
     dp: Datapath = None
-    instr_mem: Memory = None
+    instr_mem: list = None
 
     # IA - instr_argument
     IA = None
@@ -19,11 +16,11 @@ class ControlUnit:
     _tick = None
 
 
-    def __init__(self, dp: Datapath, data: list) -> None:
+    def __init__(self, dp: Datapath, code: list) -> None:
         self.IA = 0
         self.IP = 0
         self.dp = dp
-        self.instr_mem = Memory(data, INSTR_MEM_SIZE)
+        self.instr_mem = code.copy()
 
         self._tick = 0
 
@@ -32,35 +29,43 @@ class ControlUnit:
         self._tick += 1
 
 
-    def jump_if(self, sel: bool) -> None:
+    def jump_if(self, sel: bool, pop = False) -> None:
         if (sel):
-            assert 0 <= self.IA < INSTR_MEM_SIZE, f"out of memory: {self.IA}"
+            assert 0 <= self.IA < len(self.instr_mem), f"out of memory: {self.IA}"
             self.IP = self.IA
         else:
             self.IP += 1
+        if (pop):
+            self.dp.alu(LAluSel.STACK, RAluSel.ZERO)
+            self.dp.latch_tos(TosInSel.ALU)
+            self.tick()
+            self.dp.stack.pop()
+            self.tick()
 
 
     def decode_and_execute_instruction(self):
-        if ((instr := self.instr_mem.read(self.IP)) == 0):
-            instr = {"opcode": "halt"}
+        assert 0 <= self.IP < len(self.instr_mem), f"out of memory: {self.IP}"
+        instr = self.instr_mem[self.IP]
+
         if ("arg" in instr.keys()):
             self.IA =  instr["arg"]
-
         opcode = instr["opcode"]
+
+        self.tick()
 
         match opcode:
             case Opcode.HALT:
                 raise StopIteration()
             case Opcode.JMP:
                 self.jump_if(True)
+                self.tick()
             case Opcode.JZ:
-                self.jump_if(self.dp.is_tos_zero())
+                self.jump_if(self.dp.is_tos_zero(), pop=True)
             case Opcode.JG:
-                self.jump_if(not self.dp.is_tos_neg())
+                self.jump_if(not self.dp.is_tos_neg(), pop=True)
             case _:
                 self.IP += 1
 
-        self.tick()
 
         match opcode:
             case Opcode.DUP:
@@ -69,11 +74,13 @@ class ControlUnit:
                 self.tick()
             case Opcode.ADD:
                 self.dp.alu(LAluSel.STACK, RAluSel.TOS, AluOpSel.PLUS)
+                self.dp.latch_tos(TosInSel.ALU)
                 self.tick()
                 self.dp.pop_stack()
                 self.tick()
             case Opcode.DEC:
                 self.dp.alu(LAluSel.STACK, RAluSel.TOS, AluOpSel.MINUS)
+                self.dp.latch_tos(TosInSel.ALU)
                 self.tick()
                 self.dp.pop_stack()
                 self.tick()
@@ -102,18 +109,6 @@ class ControlUnit:
                 self.dp.arg_value = self.IA
                 self.dp.latch_tos(TosInSel.ARG)
                 self.tick()
-            case Opcode.PUSH_MEM:
-                self.dp.alu(LAluSel.ZERO, RAluSel.TOS)
-                self.dp.push_stack()
-                self.tick()
-                self.dp.arg_value = self.IA
-                self.dp.latch_tos(TosInSel.ARG)
-                self.tick()
-                self.dp.alu(LAluSel.ZERO, RAluSel.TOS)
-                self.dp.latch_ar()
-                self.tick()
-                self.dp.latch_tos(TosInSel.MEM)
-                self.tick()
             case Opcode.POP:
                 self.dp.alu(LAluSel.ZERO, RAluSel.TOS)
                 self.dp.push_stack()
@@ -141,3 +136,18 @@ class ControlUnit:
             case Opcode.INPUT:
                 self.dp.latch_tos(TosInSel.INPUT)
                 self.tick()
+
+
+    def __repr__(self):
+        """Вернуть строковое представление состояния процессора."""
+        state_repr = "TICK: {:3} IP: {:3} AR: {:3} MEM_OUT: {:3} TOS: {:3}".format(
+            self._tick,
+            self.IP,
+            self.dp.AR,
+            self.dp.mem_oe(),
+            self.dp.TOS,
+        )
+
+        instr_repr = self.instr_mem[self.IP]
+
+        return "{} \t{}".format(state_repr, instr_repr)

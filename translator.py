@@ -3,13 +3,12 @@ import sys
 import json
 from isa import Opcode
 
-MACHINE_WORD_MASK =     0xFFFFFFFF 
-MACHINE_WORD_MAX_POS =  0x0FFFFFFF
 
 LABEL_PATTERN = r'[a-zA-Z_][a-zA-Z0-9_]*:'
 LABEL_NAME_PATTERN = r'[a-zA-Z_][a-zA-Z0-9_]*'
 COMMAND_LINE_PATTERN = r'[a-zA-Z][a-zA-Z0-9_]*(?: +\w+)?'
 WORD_LINE_PATTERN = r'word(?: +.+)'
+BUF_LINE_PATTERN = r''
 INTEGER_PATTERN = r'\-?(?:0|[1-9][0-9]*)'
 STRING_DEFINITION_PATTERN = r'\-?(?:0|[1-9][0-9]*), *(?:\'[^\']*\'|\"[^\"]*\")'
 
@@ -92,41 +91,41 @@ def translate_code_section(lines: list, first_line: int = 0, data_labels: dict =
             match (command := command.lower()):
                 case Opcode.DUP | Opcode.ADD | Opcode.DEC | Opcode.MOD2 | Opcode.PRINT | Opcode.INPUT | Opcode.PUSH_BY | Opcode.HALT:
                     assert args_line is None, f"line {line_number}: command {command} doesn't require any arguments:\n {line}"
-                case Opcode.JMP | Opcode.JZ | Opcode.JG | Opcode.POP:
-                    print("YEA")
+                case Opcode.JMP | Opcode.JZ | Opcode.JG:
                     assert args_line is not None and re.fullmatch(LABEL_NAME_PATTERN, args_line), \
                         f"line {line_number}: command {command} takes one argument: label name:\n {line}"
                     arg = args_line
                 case Opcode.PUSH:
-                    assert args_line is not None, f"line {line_number}: command {command} takes one argument in format integer_number, label_name or (label_name):\n{line}"
+                    assert args_line is not None, f"line {line_number}: command {command} takes one argument in format integer_number or label_name:\n{line}"
                     if (re.fullmatch(INTEGER_PATTERN, args_line)):
                         arg = int(args_line)
-                    elif (args_line[0] == '(' and args_line[-1] == ')' and re.fullmatch(LABEL_NAME_PATTERN, args_line[1:-1])):
-                        label_name = args_line[1:-1]
-                        if (label_name in data_labels.keys()):
-                            arg = data_labels[label_name]
-                            command = Opcode.PUSH_MEM
-                            # TODO
                     elif (re.fullmatch(LABEL_NAME_PATTERN, args_line)):
-                        arg = args_line
+                        if ((label_name := args_line) in data_labels.keys()):
+                            arg = data_labels[label_name]
+                            # TODO
                     else:
-                        raise Exception(f"line {line_number}: command {command} takes one argument in format integer_number, label_name or (label_name):\n{line}")
+                        raise Exception(f"line {line_number}: command {command} takes one argument in format integer_number or label_name:\n{line}")
+                case Opcode.POP:
+                    assert args_line is not None, f"line {line_number}: command {command} takes one argument: label_name:\n{line}"
+                    if (re.fullmatch(LABEL_NAME_PATTERN, args_line)):
+                        if ((label_name := args_line) in data_labels.keys()):
+                            arg = data_labels[label_name]
+                            # TODO
+                    else:
+                        raise Exception(f"line {line_number}: command {command} takes one argument in format integer_number or label_name:\n{line}")
                 case _:
                     raise Exception(token)
                     
             result.append({"opcode": command, "term": [line_number, char_number, token]})
             if (arg is not None):
-                print("YES")
                 result[-1]["arg"] = arg
 
             if (last_undefined_instr_label_info != None):
-                instr_labels[last_undefined_instr_label_info["name"]] = {"instr": line_number}
+                instr_labels[last_undefined_instr_label_info["name"]] = {"instr": instr_counter}
                 last_undefined_instr_label_info = None
             
             instr_counter += 1
         else:
-            for ch in token:
-                print("ch", ch)
             raise Exception(f"line {line_number} cannot be interpreted as a code line:\n{line}")
     
     assert last_undefined_instr_label_info is None, \
@@ -134,7 +133,7 @@ def translate_code_section(lines: list, first_line: int = 0, data_labels: dict =
     
     for instr in result:
         if (instr["opcode"] in (Opcode.JMP, Opcode.JZ, Opcode.JG)):
-            instr["arg"] = instr_labels[instr["arg"]]["instr"] - 1
+            instr["arg"] = instr_labels[instr["arg"]]["instr"]
 
     return result
 

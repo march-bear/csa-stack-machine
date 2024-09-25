@@ -46,7 +46,7 @@ class Datapath:
         res = (left + right if (opsel == AluOpSel.PLUS) else left - right) & MACHINE_WORD_MASK
         if (res > MACHINE_WORD_MAX_POS):
             res -= MACHINE_WORD_MASK + 1
-        
+
         self.alu_value = res % 2 if (modsel == AluModSel.MOD2) else res
     
 
@@ -61,11 +61,10 @@ class Datapath:
             case TosInSel.BR:
                 self.TOS = self.BR
             case TosInSel.INPUT:
-                # assert len(self.input_buf) > 0, "input is empty"
                 self.TOS = self.input_buf.pop(0) if len(self.input_buf) > 0 else 0
 
 
-    def latch_br(self):
+    def latch_br(self) -> None:
         self.BR = self.stack.peek()
 
 
@@ -74,10 +73,10 @@ class Datapath:
     
 
     def mem_wr(self) -> None:
-        self.data_mem[self.AR] = self.alu_value
+        self.data_mem.write(self.AR, self.alu_value)
 
 
-    def latch_ar(self):
+    def latch_ar(self) -> None:
         assert 0 <= self.alu_value < DATA_MEM_SIZE, f"out of memory: {self.alu_value}"
 
         self.AR = self.alu_value
