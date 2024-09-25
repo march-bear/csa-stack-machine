@@ -45,3 +45,4 @@ out_log: |
   [INFO]  Simulation ended!
   [INFO]  output_buffer (string): foo
   [INFO]  output_buffer (values): [102, 111, 111]
+  
