@@ -55,13 +55,13 @@ def main(target, input_stream) -> None:
     program = json.loads(program_json)
 
     input_tokens = []
-    if (input_file is not None):
+    if input_file is not None:
         with open(input_file, "r") as ifile:
             input_tokens = ifile.read()
 
     _, output_buf, instr_counter, ticks = simulation(program, [ord(ch) for ch in input_tokens])
     if all(0 <= token < 0x110000 for token in output_buf):
-        print("output:", ''.join([chr(token) for token in output_buf]))
+        print("output:", "".join([chr(token) for token in output_buf]))
     else:
         print(f"UNREADABLE output: {output_buf}")
     print(f"instr_counter: {instr_counter} ticks: {ticks}")

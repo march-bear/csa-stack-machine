@@ -33,7 +33,7 @@ class Stack:
         assert len(self.data) < self.size, f"stack overflow: {value}"
 
         self.data.append(value)
-    
+
     def pop(self):
         return self.data.pop() if len(self.data) > 0 else 0
 

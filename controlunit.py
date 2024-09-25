@@ -14,7 +14,6 @@ class ControlUnit:
 
     _tick = None
 
-
     def __init__(self, dp: Datapath, code: list) -> None:
         self.IA = 0
         self.IP = 0

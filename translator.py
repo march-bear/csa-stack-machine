@@ -4,7 +4,7 @@ import json
 from isa import Opcode
 from errors import *
 
-MACHINE_WORD_MASK = 0xFFFFFFFF 
+MACHINE_WORD_MASK = 0xFFFFFFFF
 MACHINE_WORD_MAX_POS = 0x0FFFFFFF
 
 LABEL_PATTERN = r"[a-zA-Z_][a-zA-Z0-9_]*:"
@@ -24,16 +24,16 @@ def translate_data_section(lines: list, first_line: int = 1):
     for line_num, line in enumerate(lines[first_line:], start=first_line + 1):
         token = line.strip()
 
-        if token == '':
+        if token == "":
             pass
         elif token == "section .code":
             assert len(data) > 0, f"section .data doesn't contain any data"
             break
         elif re.fullmatch(LABEL_PATTERN, token):
             if undef_label is not None:
-                raise EmptyLabelException(undef_label['line'], undef_label['name'])
+                raise EmptyLabelException(undef_label["line"], undef_label["name"])
 
-            label_name = token.rstrip(':')
+            label_name = token.rstrip(":")
             if label_name in labels.keys():
                 raise SecondLabelDeclarationException(line_num, label_name)
 
@@ -48,7 +48,7 @@ def translate_data_section(lines: list, first_line: int = 1):
 
                 data.append(int(length))
                 [data.append(ord(ch)) for ch in string]
-            else: 
+            else:
                 raise StatementArgumentException(line_num, "word")
 
             if undef_label is not None:
@@ -82,11 +82,11 @@ def translate_code_section(lines: list, first_line: int = 0):
         char_number = len(line) - len(lstrip_line)
         token = lstrip_line.rstrip()
 
-        if token == '':
+        if token == "":
             pass
         elif re.fullmatch(LABEL_PATTERN, token):
             if undef_label is not None:
-                raise EmptyLabelException(undef_label['line'], undef_label['name'])
+                raise EmptyLabelException(undef_label["line"], undef_label["name"])
 
             label_name = token.rstrip(':')
             if label_name in labels.keys():
@@ -104,15 +104,15 @@ def translate_code_section(lines: list, first_line: int = 0):
             match command := command.lower():
                 case (
                     Opcode.DUP 
-                    | Opcode.ADD 
-                    | Opcode.DEC 
-                    | Opcode.SWAP 
-                    | Opcode.MOD2 
-                    | Opcode.PRINT 
-                    | Opcode.INPUT 
-                    | Opcode.PUSH_BY 
-                    | Opcode.POP_BY 
-                    | Opcode.DEL_TOS 
+                    | Opcode.ADD
+                    | Opcode.DEC
+                    | Opcode.SWAP
+                    | Opcode.MOD2
+                    | Opcode.PRINT
+                    | Opcode.INPUT
+                    | Opcode.PUSH_BY
+                    | Opcode.POP_BY
+                    | Opcode.DEL_TOS
                     | Opcode.HALT
                 ):
                     if args_line is not None:
@@ -124,7 +124,8 @@ def translate_code_section(lines: list, first_line: int = 0):
 
                     arg = args_line
                 case Opcode.PUSH:
-                    if args_line is None: args_line = ''
+                    if args_line is None:
+                        args_line = ''
 
                     if re.fullmatch(INTEGER_PATTERN, args_line):
                         arg = int(args_line)
@@ -144,10 +145,11 @@ def translate_code_section(lines: list, first_line: int = 0):
 
             instr_info = {}
             instr_info["opcode"] = command
-            if arg is not None: 
-                if type(arg) is int: 
+            if arg is not None:
+                if type(arg) is int:
                     arg = arg & MACHINE_WORD_MASK
-                    if (arg > MACHINE_WORD_MAX_POS): arg -= MACHINE_WORD_MASK + 1
+                    if (arg > MACHINE_WORD_MAX_POS):
+                        arg -= MACHINE_WORD_MASK + 1
                 instr_info["arg"] = arg
             instr_info["term"] = [line_num, char_number, token]
 
@@ -161,8 +163,8 @@ def translate_code_section(lines: list, first_line: int = 0):
         else:
             raise InterpretationException(line_num, line, "code line")
 
-    if undef_label is not None: 
-        raise EmptyLabelException(undef_label['line'], undef_label['line'])
+    if undef_label is not None:
+        raise EmptyLabelException(undef_label["line"], undef_label["line"])
 
     return result, labels
 

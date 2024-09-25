@@ -5,7 +5,7 @@ from sels import AluOpSel, TosInSel, LAluSel, RAluSel, AluModSel
 
 DATA_MEM_SIZE = 64
 STACK_SIZE = 64
-MACHINE_WORD_MASK = 0xFFFFFFFF 
+MACHINE_WORD_MASK = 0xFFFFFFFF
 MACHINE_WORD_MAX_POS = 0x0FFFFFFF
 
 
@@ -46,7 +46,7 @@ class Datapath:
             res -= MACHINE_WORD_MASK + 1
 
         self.alu_value = res % 2 if (modsel == AluModSel.MOD2) else res
-    
+
     def latch_tos(self, sel: TosInSel):
         match sel:
             case TosInSel.ARG:
@@ -84,13 +84,13 @@ class Datapath:
 
     def push_stack(self) -> None:
         self.stack.push(self.alu_value)
-    
+
     def is_tos_zero(self):
         return self.TOS == 0
-    
+
     def is_tos_neg(self):
         return self.TOS < 0
-    
+
     def output(self) -> None:
         logging.debug("output: %s << %s", str(self.output_buf), repr(self.alu_value))
         self.output_buf.append(self.alu_value)
