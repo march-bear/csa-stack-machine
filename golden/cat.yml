@@ -1,11 +1,11 @@
 in_source: |-
   loop:
-    input
-    jz end
-    print
-    jmp loop
+      input
+      jz end
+      print
+      jmp loop
   end:
-    halt
+      halt
 in_stdin: |-
   foo
 out_code: |-
