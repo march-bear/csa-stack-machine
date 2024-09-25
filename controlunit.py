@@ -34,6 +34,7 @@ class ControlUnit:
             self.IP = self.IA
         else:
             self.IP += 1
+        self.tick()
 
 
     def decode_and_execute_instruction(self):
@@ -51,7 +52,6 @@ class ControlUnit:
                 raise StopIteration()
             case Opcode.JMP:
                 self.jump_if(True)
-                self.tick()
             case Opcode.JZ:
                 self.jump_if(self.dp.is_tos_zero())
             case Opcode.JG:
