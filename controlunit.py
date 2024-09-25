@@ -1,5 +1,4 @@
 from datapath import Datapath
-from memory import Memory
 from isa import Opcode
 from sels import LAluSel, RAluSel, AluOpSel, TosInSel, AluModSel
 

@@ -1,5 +1,4 @@
-from memory import Memory
-from stack import Stack
+from memory import Memory, Stack
 from sels import AluOpSel, TosInSel, LAluSel, RAluSel, AluModSel
 
 
