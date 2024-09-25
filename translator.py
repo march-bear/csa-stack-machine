@@ -4,6 +4,8 @@ import json
 from isa import Opcode
 from errors import *
 
+MACHINE_WORD_MASK =     0xFFFFFFFF 
+MACHINE_WORD_MAX_POS =  0x0FFFFFFF
 
 LABEL_PATTERN = r'[a-zA-Z_][a-zA-Z0-9_]*:'
 LABEL_NAME_PATTERN = r'[a-zA-Z_][a-zA-Z0-9_]*'
@@ -131,6 +133,9 @@ def translate_code_section(lines: list, first_line: int = 0):
             instr_info = {}
             instr_info["opcode"] = command
             if (arg is not None): 
+                if (type(arg) is int): 
+                    arg = arg & MACHINE_WORD_MASK
+                    if (arg > MACHINE_WORD_MAX_POS): arg -= MACHINE_WORD_MASK + 1
                 instr_info["arg"] = arg
             instr_info["term"] = [line_num, char_number, token]
 
@@ -203,6 +208,27 @@ def translate(program):
 
     replace_label_names(code, instr_labels, data_labels)
     return code
+
+def main(code, target):
+    try:
+        input_file = code
+        output_file = target
+        
+        with open(input_file, "r") as ifile:
+            program = ifile.read()
+
+        code = translate(program)
+
+        buf = []
+        for instr in code:
+            buf.append(json.dumps(instr))
+
+        with open(output_file, "w") as ofile:
+            ofile.write("[" + ",\n ".join(buf) + "]")
+        
+        print("LoC:", len(program.split('\n')), "code instr:", len(code))
+    except Exception as ex:
+        print(f"error: {ex.__class__.__name__}: {ex}\n")
 
 
 if __name__ == "__main__":
