@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class Opcode(str, Enum):
     DUP = "dup"
     ADD = "add"
@@ -23,3 +24,4 @@ class Opcode(str, Enum):
 
     def __str__(self):
         return str(self.value)
+    

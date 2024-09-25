@@ -209,6 +209,7 @@ def translate(program):
     replace_label_names(code, instr_labels, data_labels)
     return code
 
+
 def main(code, target):
     try:
         input_file = code
@@ -257,4 +258,3 @@ if __name__ == "__main__":
         print("translation is succesful")
     except Exception as ex:
         print(f"error: {ex.__class__.__name__}: {ex}\n")
-        

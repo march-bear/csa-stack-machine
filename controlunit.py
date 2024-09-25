@@ -170,7 +170,5 @@ class ControlUnit:
             self.dp.TOS,
             self.dp.stack.data,
         )
-
-        instr_repr = self.instr_mem[self.IP]
-
+        
         return state_repr
