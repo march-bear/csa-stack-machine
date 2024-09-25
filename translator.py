@@ -8,7 +8,7 @@ LABEL_PATTERN = r'[a-zA-Z_][a-zA-Z0-9_]*:'
 LABEL_NAME_PATTERN = r'[a-zA-Z_][a-zA-Z0-9_]*'
 COMMAND_LINE_PATTERN = r'[a-zA-Z][a-zA-Z0-9_]*(?: +\w+)?'
 WORD_LINE_PATTERN = r'word(?: +.+)'
-BUF_LINE_PATTERN = r''
+BUF_LINE_PATTERN = r'buf(?: +\-?(?:0|[1-9][0-9]*))'
 INTEGER_PATTERN = r'\-?(?:0|[1-9][0-9]*)'
 STRING_DEFINITION_PATTERN = r'\-?(?:0|[1-9][0-9]*), *(?:\'[^\']*\'|\"[^\"]*\")'
 
@@ -30,9 +30,9 @@ def translate_data_section(lines: list, first_line: int = 1):
         elif (re.fullmatch(LABEL_PATTERN, token)):
             assert last_undefined_label_info is None, f"line {last_undefined_label_info['line']}: label {last_undefined_label_info['name']} does not indicate data"
             label_name = token.rstrip(':')
-            assert label_name not in labels.keys(), f"line {line_number}: second label declaration {label_name}"
+            assert label_name not in labels.keys(), f"line {line_number + 1}: second label declaration {label_name}"
 
-            last_undefined_label_info = {"name": label_name, "line": line_number, "addr": len(data)}
+            last_undefined_label_info = {"name": label_name, "line": line_number + 1, "addr": len(data)}
         elif (re.fullmatch(WORD_LINE_PATTERN, token, flags=re.IGNORECASE)):
             args_line = token.split(maxsplit=1)[1]
             if (re.fullmatch(INTEGER_PATTERN, args_line)):
@@ -44,14 +44,21 @@ def translate_data_section(lines: list, first_line: int = 1):
                 data.append(int(length))
                 [data.append(ord(ch)) for ch in string]
             else: 
-                raise Exception(f"line {line_number}: wrong argument format for statement 'word'")
+                raise Exception(f"line {line_number + 1}: wrong argument format for statement 'word'")
 
             if (last_undefined_label_info is not None):
                 labels[last_undefined_label_info["name"]] = last_undefined_label_info["addr"]
                 last_undefined_label_info = None
+        elif (re.fullmatch(BUF_LINE_PATTERN, token, flags=re.IGNORECASE)):
+            arg = int(token.split(maxsplit=1)[1])
+            assert arg > 0, f"line {line_number + 1}: buf size can't be negative or 0"
+            [data.append(0) for _ in range(arg)]
 
+            if (last_undefined_label_info is not None):
+                labels[last_undefined_label_info["name"]] = last_undefined_label_info["addr"]
+                last_undefined_label_info = None
         else:
-            raise Exception(f"line {line_number} cannot be interpreted as a data line:\n{line}")
+            raise Exception(f"line {line_number + 1} cannot be interpreted as a data line:\n{line}")
     
     assert last_undefined_label_info is None, \
         f"line {last_undefined_label_info['line']}: label {last_undefined_label_info['name']} does not indicate data"
@@ -77,9 +84,9 @@ def translate_code_section(lines: list, first_line: int = 0, data_labels: dict =
                 f"line {last_undefined_instr_label_info['line']}: label {last_undefined_instr_label_info['name']} does not indicate instructions"
             
             label_name = token.rstrip(':')
-            assert label_name not in instr_labels.keys(), f"line {line_number}: second label declaration {label_name}"
+            assert label_name not in instr_labels.keys(), f"line {line_number + 1}: second label declaration {label_name}"
 
-            last_undefined_instr_label_info = {"name": label_name, "line": line_number}
+            last_undefined_instr_label_info = {"name": label_name, "line": line_number + 1}
         elif (re.fullmatch(COMMAND_LINE_PATTERN, token)):
             args_line = None
             if (len(_splited_token := token.split(maxsplit=1)) == 1):
@@ -89,14 +96,14 @@ def translate_code_section(lines: list, first_line: int = 0, data_labels: dict =
             
             arg = None
             match (command := command.lower()):
-                case Opcode.DUP | Opcode.ADD | Opcode.DEC | Opcode.MOD2 | Opcode.PRINT | Opcode.INPUT | Opcode.PUSH_BY | Opcode.HALT:
-                    assert args_line is None, f"line {line_number}: command {command} doesn't require any arguments:\n {line}"
+                case Opcode.DUP | Opcode.ADD | Opcode.DEC | Opcode.SWAP | Opcode.MOD2 | Opcode.PRINT | Opcode.INPUT | Opcode.PUSH_BY | Opcode.POP_BY | Opcode.DEL_TOS | Opcode.HALT:
+                    assert args_line is None, f"line {line_number + 1}: command {command} doesn't require any arguments:\n {line}"
                 case Opcode.JMP | Opcode.JZ | Opcode.JG:
                     assert args_line is not None and re.fullmatch(LABEL_NAME_PATTERN, args_line), \
-                        f"line {line_number}: command {command} takes one argument: label name:\n {line}"
+                        f"line {line_number + 1}: command {command} takes one argument: label name:\n {line}"
                     arg = args_line
                 case Opcode.PUSH:
-                    assert args_line is not None, f"line {line_number}: command {command} takes one argument in format integer_number or label_name:\n{line}"
+                    assert args_line is not None, f"line {line_number + 1}: command {command} takes one argument in format integer_number or label_name:\n{line}"
                     if (re.fullmatch(INTEGER_PATTERN, args_line)):
                         arg = int(args_line)
                     elif (re.fullmatch(LABEL_NAME_PATTERN, args_line)):
@@ -104,17 +111,17 @@ def translate_code_section(lines: list, first_line: int = 0, data_labels: dict =
                             arg = data_labels[label_name]
                             # TODO
                     else:
-                        raise Exception(f"line {line_number}: command {command} takes one argument in format integer_number or label_name:\n{line}")
+                        raise Exception(f"line {line_number + 1}: command {command} takes one argument in format integer_number or label_name:\n{line}")
                 case Opcode.POP:
-                    assert args_line is not None, f"line {line_number}: command {command} takes one argument: label_name:\n{line}"
+                    assert args_line is not None, f"line {line_number + 1}: command {command} takes one argument: label_name:\n{line}"
                     if (re.fullmatch(LABEL_NAME_PATTERN, args_line)):
                         if ((label_name := args_line) in data_labels.keys()):
                             arg = data_labels[label_name]
                             # TODO
                     else:
-                        raise Exception(f"line {line_number}: command {command} takes one argument in format integer_number or label_name:\n{line}")
+                        raise Exception(f"line {line_number}: command {command} takes one argument in format label_name:\n{line}")
                 case _:
-                    raise Exception(token)
+                    raise Exception(f"line {line_number}: unknown command: {command}")
                     
             result.append({"opcode": command, "term": [line_number, char_number, token]})
             if (arg is not None):
@@ -187,5 +194,5 @@ if __name__ == "__main__":
 
         print("translation is succesful")
     except Exception as ex:
-        print(f"error: {ex}\n")
+        print(f"error: {ex.__class__.__name__}: {ex}\n")
         

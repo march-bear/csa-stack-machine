@@ -23,8 +23,8 @@ def simulation(program, input_tokens: list = []):
 
     try:
         while (True): 
-            cu.decode_and_execute_instruction()
             logging.debug(cu)
+            cu.decode_and_execute_instruction()
     except StopIteration:
         if (all(0 <= token < 0x110000 for token in dp.output_buf)):
             logging.info(f"output_buffer: {''.join([chr(token) for token in dp.output_buf])}")

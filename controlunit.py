@@ -28,18 +28,12 @@ class ControlUnit:
         self._tick += 1
 
 
-    def jump_if(self, sel: bool, pop = False) -> None:
+    def jump_if(self, sel: bool) -> None:
         if (sel):
             assert 0 <= self.IA < len(self.instr_mem), f"out of memory: {self.IA}"
             self.IP = self.IA
         else:
             self.IP += 1
-        if (pop):
-            self.dp.alu(LAluSel.STACK, RAluSel.ZERO)
-            self.dp.latch_tos(TosInSel.ALU)
-            self.tick()
-            self.dp.stack.pop()
-            self.tick()
 
 
     def decode_and_execute_instruction(self):
@@ -59,9 +53,9 @@ class ControlUnit:
                 self.jump_if(True)
                 self.tick()
             case Opcode.JZ:
-                self.jump_if(self.dp.is_tos_zero(), pop=True)
+                self.jump_if(self.dp.is_tos_zero())
             case Opcode.JG:
-                self.jump_if(not self.dp.is_tos_neg(), pop=True)
+                self.jump_if(not self.dp.is_tos_neg())
             case _:
                 self.IP += 1
 
@@ -90,6 +84,8 @@ class ControlUnit:
             case Opcode.SWAP:
                 self.dp.latch_br()
                 self.tick()
+                self.dp.pop_stack()
+                self.tick()
                 self.dp.alu(LAluSel.ZERO, RAluSel.TOS)
                 self.dp.push_stack()
                 self.tick()
@@ -107,6 +103,20 @@ class ControlUnit:
                 self.tick()
                 self.dp.arg_value = self.IA
                 self.dp.latch_tos(TosInSel.ARG)
+                self.tick()
+            case Opcode.POP_BY:
+                self.dp.alu(LAluSel.ZERO, RAluSel.TOS)
+                self.dp.latch_ar()
+                self.tick()
+                self.dp.alu(LAluSel.STACK, RAluSel.ZERO)
+                self.dp.mem_wr()
+                self.tick()
+                self.dp.pop_stack()
+                self.tick()
+                self.dp.alu(LAluSel.STACK, RAluSel.ZERO)
+                self.dp.latch_tos(TosInSel.ALU)
+                self.tick()
+                self.dp.pop_stack()
                 self.tick()
             case Opcode.POP:
                 self.dp.alu(LAluSel.ZERO, RAluSel.TOS)
@@ -128,23 +138,37 @@ class ControlUnit:
                 self.tick()
                 self.dp.pop_stack()
                 self.tick()
+            case Opcode.DEL_TOS:
+                self.dp.alu(LAluSel.STACK, RAluSel.ZERO)
+                self.dp.latch_tos(TosInSel.ALU)
+                self.tick()
+                self.dp.pop_stack()
+                self.tick()
             case Opcode.PRINT:
                 self.dp.alu(LAluSel.ZERO, RAluSel.TOS)
                 self.dp.output()
                 self.tick()
+                self.dp.alu(LAluSel.STACK, RAluSel.ZERO)
+                self.dp.latch_tos(TosInSel.ALU)
+                self.tick()
+                self.dp.pop_stack()
+                self.tick()
             case Opcode.INPUT:
+                self.dp.alu(LAluSel.ZERO, RAluSel.TOS)
+                self.dp.push_stack()
                 self.dp.latch_tos(TosInSel.INPUT)
                 self.tick()
 
 
     def __repr__(self):
         """Вернуть строковое представление состояния процессора."""
-        state_repr = "TICK: {:3} IP: {:3} AR: {:3} MEM_OUT: {:3} TOS: {:3}".format(
+        state_repr = "TICK: {:3} IP: {:3} AR: {:3} MEM_OUT: {:3} TOS: {:3} STACK: {}".format(
             self._tick,
             self.IP,
             self.dp.AR,
             self.dp.mem_oe(),
             self.dp.TOS,
+            self.dp.stack.data
         )
 
         instr_repr = self.instr_mem[self.IP]
