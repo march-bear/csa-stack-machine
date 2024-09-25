@@ -69,6 +69,7 @@ def main(target, input_stream) -> None:
 
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.DEBUG)
+
     args = sys.argv
     if (len(args)) not in (2, 3):
         logging.error("expected args: program_file [input_file]")
