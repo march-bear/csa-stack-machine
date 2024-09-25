@@ -28,7 +28,9 @@ op0 ::= "dup"
     | "dec"
     | "swap"
     | "mod2"
+    | "del_tos"
     | "push_by"
+    | "pop_by"
     | "print"
     | "input"
     | "halt"
@@ -106,6 +108,15 @@ label_name ::= <any of "a-z A-Z _"> { <any of "a-z A-Z 0-9 _"> }
 
 
 ## Транслятор
+Интерфейс командной строки: `translator.py <input_file> [<target_file>]`
+
+Если `<target_file>` не указан, имя целевого файла берется за `<input_file>.code`
+
+Реализован в модуле: [translator](translator.py)
+
+Этапы трансляции (функция translate):
+
+
 
 ## Модель процессора
 

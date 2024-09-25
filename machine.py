@@ -27,15 +27,16 @@ def simulation(program, input_tokens: list = []):
             cu.decode_and_execute_instruction()
     except StopIteration:
         if (all(0 <= token < 0x110000 for token in dp.output_buf)):
-            logging.info(f"output_buffer: {''.join([chr(token) for token in dp.output_buf])}")
+            logging.info(f"output_buffer(string): {''.join([chr(token) for token in dp.output_buf])}")
         else:
-            logging.warning(f"output UNREADABLE")
-            logging.info(f"output_buffer (values): {dp.output_buf}")
+            logging.warning(f"output_buffer (string): UNREADABLE")
+
+        logging.info(f"output_buffer (values): {dp.output_buf}")
     except Exception as ex:
         logging.error(f"{ex.__class__.__name__}: {ex}")
-        return SIMULATION_ERROR_EXIT_CODE
+        return SIMULATION_ERROR_EXIT_CODE, None
     
-    return DONE_EXIT_CODE
+    return DONE_EXIT_CODE, dp.output_buf.copy()
 
 
 if __name__ == "__main__":
