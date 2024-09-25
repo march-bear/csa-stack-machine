@@ -11,7 +11,7 @@ SIMULATION_ERROR_EXIT_CODE = 2
 
 
 def simulation(program, input_tokens: list = []):
-    if len(program) > 1 and type(program[0]) is list:
+    if len(program) > 1 and isinstance(program, list):
         data = program[0]
         code = program[1:]
     else:
@@ -34,11 +34,11 @@ def simulation(program, input_tokens: list = []):
             logging.info(f"output_buffer (string): {''.join([chr(token) for token in dp.output_buf])}")
         else:
             pass
-            logging.warning(f"output_buffer (string): UNREADABLE")
+            logging.warning("output_buffer (string): UNREADABLE")
 
         logging.info(f"output_buffer (values): {dp.output_buf}")
     except Exception as ex:
-        logging.error(f"{ex.__class__.__name__}: {ex}")
+        logging.exception(f"{ex.__class__.__name__}: {ex}")
         return SIMULATION_ERROR_EXIT_CODE, None
 
     ticks = cu._tick
@@ -49,14 +49,14 @@ def simulation(program, input_tokens: list = []):
 def main(target, input_stream) -> None:
     program_file = target
     input_file = input_stream
-    with open(program_file, "r") as pfile:
+    with open(program_file) as pfile:
         program_json = pfile.read()
 
     program = json.loads(program_json)
 
     input_tokens = []
     if input_file is not None:
-        with open(input_file, "r") as ifile:
+        with open(input_file) as ifile:
             input_tokens = ifile.read()
 
     _, output_buf, instr_counter, ticks = simulation(program, [ord(ch) for ch in input_tokens])
@@ -71,20 +71,20 @@ if __name__ == "__main__":
     logging.getLogger().setLevel(logging.DEBUG)
     args = sys.argv
     if (len(args)) not in (2, 3):
-        logging.error(f"expected args: program_file [input_file]")
+        logging.error("expected args: program_file [input_file]")
         sys.exit(WRONG_SYS_ARGV_EXIT_CODE)
 
     program_file = args[1]
     input_file = args[2] if (len(args) == 3) else None
 
-    with open(program_file, "r") as pfile:
+    with open(program_file) as pfile:
         program_json = pfile.read()
 
     program = json.loads(program_json)
 
     input_tokens = []
     if input_file is not None:
-        with open(input_file, "r") as ifile:
+        with open(input_file) as ifile:
             input_tokens = ifile.read()
 
     exit_code, _ = simulation(program, [ord(ch) for ch in input_tokens])

@@ -1,6 +1,7 @@
 import logging
+
 from memory import Memory, Stack
-from sels import AluOpSel, TosInSel, LAluSel, RAluSel, AluModSel
+from sels import AluModSel, AluOpSel, LAluSel, RAluSel, TosInSel
 
 
 DATA_MEM_SIZE = 64

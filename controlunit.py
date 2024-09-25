@@ -1,6 +1,6 @@
 from datapath import Datapath
 from isa import Opcode
-from sels import LAluSel, RAluSel, AluOpSel, TosInSel, AluModSel
+from sels import AluModSel, AluOpSel, LAluSel, RAluSel, TosInSel
 
 
 class ControlUnit:
@@ -155,7 +155,7 @@ class ControlUnit:
                 self.tick()
 
     def __repr__(self):
-        state_repr = "TICK: {:3} IP: {:3} AR: {:3} MEM_OUT: {:3} INSTR: {:10} TOS: {:3} STACK: {}".format(
+        return "TICK: {:3} IP: {:3} AR: {:3} MEM_OUT: {:3} INSTR: {:10} TOS: {:3} STACK: {}".format(
             self._tick,
             self.IP,
             self.dp.AR,
@@ -164,5 +164,3 @@ class ControlUnit:
             self.dp.TOS,
             self.dp.stack.data,
         )
-
-        return state_repr
