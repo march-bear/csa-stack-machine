@@ -3,12 +3,12 @@ import re
 import sys
 
 from errors import (
-    ArgumentsError, 
-    EmptyLabelError, 
-    InterpretationError, 
-    LabelIsNotExistError, 
-    SecondLabelDeclarationError, 
-    StatementArgumentError, 
+    ArgumentsError,
+    EmptyLabelError,
+    InterpretationError,
+    LabelIsNotExistError,
+    SecondLabelDeclarationError,
+    StatementArgumentError,
     UnknownCommandError
 )
 from isa import Opcode
