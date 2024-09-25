@@ -1,3 +1,4 @@
+import logging
 from memory import Memory, Stack
 from sels import AluOpSel, TosInSel, LAluSel, RAluSel, AluModSel
 
@@ -60,7 +61,12 @@ class Datapath:
             case TosInSel.BR:
                 self.TOS = self.BR
             case TosInSel.INPUT:
-                self.TOS = self.input_buf.pop(0) if len(self.input_buf) > 0 else 0
+                if (len(self.input_buf)) > 0:
+                    self.TOS = self.input_buf.pop(0)
+                    logging.debug("input: %s", repr(self.TOS))
+                else:
+                    self.TOS = 0
+                    logging.warning("input: EMPTY!")
 
 
     def latch_br(self) -> None:
@@ -98,4 +104,5 @@ class Datapath:
     
 
     def output(self) -> None:
+        logging.debug("output: %s << %s", str(self.output_buf), repr(self.alu_value))
         self.output_buf.append(self.alu_value)

@@ -161,16 +161,16 @@ class ControlUnit:
 
 
     def __repr__(self):
-        """Вернуть строковое представление состояния процессора."""
-        state_repr = "TICK: {:3} IP: {:3} AR: {:3} MEM_OUT: {:3} TOS: {:3} STACK: {}".format(
+        state_repr = "TICK: {:3} IP: {:3} AR: {:3} MEM_OUT: {:3} INSTR: {:10} TOS: {:3} STACK: {}".format(
             self._tick,
             self.IP,
             self.dp.AR,
             self.dp.mem_oe(),
+            f"{self.instr_mem[self.IP]['opcode']} {'' if 'arg' not in self.instr_mem[self.IP].keys() else self.instr_mem[self.IP]['arg']}",
             self.dp.TOS,
-            self.dp.stack.data
+            self.dp.stack.data,
         )
 
         instr_repr = self.instr_mem[self.IP]
 
-        return "{} \t{}".format(state_repr, instr_repr)
+        return state_repr
