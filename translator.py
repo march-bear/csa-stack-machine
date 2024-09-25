@@ -2,6 +2,7 @@ import re
 import sys
 import json
 from isa import Opcode
+from errors import *
 
 
 LABEL_PATTERN = r'[a-zA-Z_][a-zA-Z0-9_]*:'
@@ -16,10 +17,9 @@ STRING_DEFINITION_PATTERN = r'\-?(?:0|[1-9][0-9]*), *(?:\'[^\']*\'|\"[^\"]*\")'
 def translate_data_section(lines: list, first_line: int = 1):
     data = []
     labels = {}
-    last_undefined_label_info = None
+    undef_label = None
     
-
-    for line_number, line in enumerate(lines[first_line:], start=first_line):
+    for line_num, line in enumerate(lines[first_line:], start=first_line + 1):
         token = line.strip()
 
         if (token == ''):
@@ -28,11 +28,14 @@ def translate_data_section(lines: list, first_line: int = 1):
             assert len(data) > 0, f"section .data doesn't contain any data"
             break
         elif (re.fullmatch(LABEL_PATTERN, token)):
-            assert last_undefined_label_info is None, f"line {last_undefined_label_info['line']}: label {last_undefined_label_info['name']} does not indicate data"
+            if (undef_label is not None):
+                raise EmptyLabelException(undef_label['line'], undef_label['name'])
+            
             label_name = token.rstrip(':')
-            assert label_name not in labels.keys(), f"line {line_number + 1}: second label declaration {label_name}"
+            if (label_name in labels.keys()):
+                raise SecondLabelDeclarationException(line_num, label_name)
 
-            last_undefined_label_info = {"name": label_name, "line": line_number + 1, "addr": len(data)}
+            undef_label = {"name": label_name, "line": line_num, "addr": len(data)}
         elif (re.fullmatch(WORD_LINE_PATTERN, token, flags=re.IGNORECASE)):
             args_line = token.split(maxsplit=1)[1]
             if (re.fullmatch(INTEGER_PATTERN, args_line)):
@@ -44,35 +47,35 @@ def translate_data_section(lines: list, first_line: int = 1):
                 data.append(int(length))
                 [data.append(ord(ch)) for ch in string]
             else: 
-                raise Exception(f"line {line_number + 1}: wrong argument format for statement 'word'")
+                raise StatementArgumentException(line_num, "word")
 
-            if (last_undefined_label_info is not None):
-                labels[last_undefined_label_info["name"]] = last_undefined_label_info["addr"]
-                last_undefined_label_info = None
+            if (undef_label is not None):
+                labels[undef_label["name"]] = undef_label["addr"]
+                undef_label = None
         elif (re.fullmatch(BUF_LINE_PATTERN, token, flags=re.IGNORECASE)):
             arg = int(token.split(maxsplit=1)[1])
-            assert arg > 0, f"line {line_number + 1}: buf size can't be negative or 0"
+            assert arg > 0, f"line {line_num}: buf size can't be negative or 0"
             [data.append(0) for _ in range(arg)]
 
-            if (last_undefined_label_info is not None):
-                labels[last_undefined_label_info["name"]] = last_undefined_label_info["addr"]
-                last_undefined_label_info = None
+            if (undef_label is not None):
+                labels[undef_label["name"]] = undef_label["addr"]
+                undef_label = None
         else:
-            raise Exception(f"line {line_number + 1} cannot be interpreted as a data line:\n{line}")
+            raise InterpretationException(line_num, line, "data line")
     
-    assert last_undefined_label_info is None, \
-        f"line {last_undefined_label_info['line']}: label {last_undefined_label_info['name']} does not indicate data"
+    if (undef_label is not None):
+        raise EmptyLabelException(undef_label["line"], undef_label["name"])
     
-    return data, line_number, labels
+    return data, line_num - 1, labels
 
 
-def translate_code_section(lines: list, first_line: int = 0, data_labels: dict = {}):
+def translate_code_section(lines: list, first_line: int = 0):
     result = []
-    instr_labels = {}
-    last_undefined_instr_label_info = None
+    labels = {}
+    undef_label = None
     
     instr_counter = 0
-    for line_number, line in enumerate(lines[first_line:], start=first_line):
+    for line_num, line in enumerate(lines[first_line:], start=first_line + 1):
         lstrip_line = line.lstrip()
         char_number = len(line) - len(lstrip_line)
         token = lstrip_line.rstrip()
@@ -80,13 +83,14 @@ def translate_code_section(lines: list, first_line: int = 0, data_labels: dict =
         if (token == ''):
             pass
         elif (re.fullmatch(LABEL_PATTERN, token)):
-            assert last_undefined_instr_label_info is None, \
-                f"line {last_undefined_instr_label_info['line']}: label {last_undefined_instr_label_info['name']} does not indicate instructions"
+            if (undef_label is not None):
+                raise EmptyLabelException(undef_label['line'], undef_label['name'])
             
             label_name = token.rstrip(':')
-            assert label_name not in instr_labels.keys(), f"line {line_number + 1}: second label declaration {label_name}"
+            if (label_name in labels.keys()):
+                raise SecondLabelDeclarationException(line_num, label_name)
 
-            last_undefined_instr_label_info = {"name": label_name, "line": line_number + 1}
+            undef_label = {"name": label_name, "line": line_num}
         elif (re.fullmatch(COMMAND_LINE_PATTERN, token)):
             args_line = None
             if (len(_splited_token := token.split(maxsplit=1)) == 1):
@@ -97,52 +101,76 @@ def translate_code_section(lines: list, first_line: int = 0, data_labels: dict =
             arg = None
             match (command := command.lower()):
                 case Opcode.DUP | Opcode.ADD | Opcode.DEC | Opcode.SWAP | Opcode.MOD2 | Opcode.PRINT | Opcode.INPUT | Opcode.PUSH_BY | Opcode.POP_BY | Opcode.DEL_TOS | Opcode.HALT:
-                    assert args_line is None, f"line {line_number + 1}: command {command} doesn't require any arguments:\n {line}"
+                    if (args_line is not None):
+                        raise ArgumentsException(line_num, line, command)
+                    
                 case Opcode.JMP | Opcode.JZ | Opcode.JG:
-                    assert args_line is not None and re.fullmatch(LABEL_NAME_PATTERN, args_line), \
-                        f"line {line_number + 1}: command {command} takes one argument: label name:\n {line}"
+                    if (args_line is None or not re.fullmatch(LABEL_NAME_PATTERN, args_line)):
+                        raise ArgumentsException(line_num, line, command, ["label_name"])
+                    
                     arg = args_line
                 case Opcode.PUSH:
-                    assert args_line is not None, f"line {line_number + 1}: command {command} takes one argument in format integer_number or label_name:\n{line}"
+                    if (args_line is None): args_line = ''
+                    
                     if (re.fullmatch(INTEGER_PATTERN, args_line)):
                         arg = int(args_line)
                     elif (re.fullmatch(LABEL_NAME_PATTERN, args_line)):
-                        if ((label_name := args_line) in data_labels.keys()):
-                            arg = data_labels[label_name]
-                            # TODO
+                        arg = args_line
                     else:
-                        raise Exception(f"line {line_number + 1}: command {command} takes one argument in format integer_number or label_name:\n{line}")
+                        raise ArgumentsException(line_num, line, command, ["integer, label_name"])
                 case Opcode.POP:
-                    assert args_line is not None, f"line {line_number + 1}: command {command} takes one argument: label_name:\n{line}"
-                    if (re.fullmatch(LABEL_NAME_PATTERN, args_line)):
-                        if ((label_name := args_line) in data_labels.keys()):
-                            arg = data_labels[label_name]
-                            # TODO
-                    else:
-                        raise Exception(f"line {line_number}: command {command} takes one argument in format label_name:\n{line}")
-                case _:
-                    raise Exception(f"line {line_number}: unknown command: {command}")
-                    
-            result.append({"opcode": command, "term": [line_number, char_number, token]})
-            if (arg is not None):
-                result[-1]["arg"] = arg
+                    if (args_line is None): args_line = ''
 
-            if (last_undefined_instr_label_info != None):
-                instr_labels[last_undefined_instr_label_info["name"]] = {"instr": instr_counter}
-                last_undefined_instr_label_info = None
+                    if (re.fullmatch(LABEL_NAME_PATTERN, args_line)):
+                        arg = args_line
+                    else:
+                        raise ArgumentsException(line_num, line, command, ["label_name"])
+                case _:
+                    raise UnknownCommandException(line_num, command)
+                    
+            instr_info = {}
+            instr_info["opcode"] = command
+            if (arg is not None): 
+                instr_info["arg"] = arg
+            instr_info["term"] = [line_num, char_number, token]
+
+            result.append(instr_info)
+
+            if (undef_label != None):
+                labels[undef_label["name"]] = {"instr": instr_counter, "line": undef_label["line"]}
+                undef_label = None
             
             instr_counter += 1
         else:
-            raise Exception(f"line {line_number} cannot be interpreted as a code line:\n{line}")
+            raise InterpretationException(line_num, line, "code line")
     
-    assert last_undefined_instr_label_info is None, \
-        f"line {last_undefined_instr_label_info['line']}: label {last_undefined_instr_label_info['name']} does not indicate instructions"
-    
-    for instr in result:
-        if (instr["opcode"] in (Opcode.JMP, Opcode.JZ, Opcode.JG)):
-            instr["arg"] = instr_labels[instr["arg"]]["instr"]
+    if undef_label is not None: 
+        raise EmptyLabelException(undef_label['line'], undef_label['line'])
 
-    return result
+    return result, labels
+
+
+def replace_label_names(code, instr_labels, data_labels):
+    if (type(code[0] is list)):
+        first_instr = 1
+    else:
+        first_instr = 0
+
+    for instr in code[first_instr:]:
+        match (instr["opcode"]):
+            case Opcode.JMP | Opcode.JZ | Opcode.JG:
+                if (instr["arg"] not in instr_labels.keys()):
+                    raise LabelIsNotExistException(instr["arg"], "instr")
+
+                instr["arg"] = instr_labels[instr["arg"]]["instr"]
+            case Opcode.POP | Opcode.PUSH:
+                if (type(instr["arg"]) is str):
+                    if (instr["arg"] not in data_labels.keys()):
+                        raise LabelIsNotExistException(instr["arg"], "data")
+
+                    instr["arg"] = data_labels[instr["arg"]]
+    
+
 
 
 def translate_with_sections(lines: list):
@@ -150,31 +178,39 @@ def translate_with_sections(lines: list):
     assert cs_line != -1, "found `section .data` but not `section .code`"
     assert len(data_list) > 0, "section .data is empty"
 
-    instr_list = translate_code_section(lines, cs_line + 1, data_labels)
+    instr_list, instr_labels = translate_code_section(lines, cs_line + 1)
     assert len(instr_list) > 0, "section .code is empty"
 
     exec_file_data = [data_list, *instr_list]
 
-    return exec_file_data
+    return exec_file_data, instr_labels, data_labels
+
+
+def translate_without_sections(lines: list):
+    code, instr_labels = translate_code_section(lines)
+    return code, instr_labels, {}
 
 
 def translate(program):
     lines = program.rstrip().split("\n")
     if (len(lines) == 0):
         return []
-    
+
     if (lines[0].strip() == "section .data"):
-        return translate_with_sections(lines)
+        code, instr_labels, data_labels = translate_with_sections(lines)
     else:
-        return translate_code_section(lines)
+        code, instr_labels, data_labels = translate_without_sections(lines)
+
+    replace_label_names(code, instr_labels, data_labels)
+    return code
 
 
 if __name__ == "__main__":
     args = sys.argv
     try:
-        assert len(args) in (2, 3), "expented args: input_file_name [output_file_name]"
+        assert len(args) in (2, 3), "expected args: input_file_name [output_file_name]"
         input_file = args[1]
-        output_file = args[2] if (len(args) == 3) else input_file + ".out"
+        output_file = args[2] if (len(args) == 3) else input_file + ".code"
 
         print(f"input file: {input_file}")
         print(f"output file: {output_file}")
