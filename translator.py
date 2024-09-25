@@ -9,7 +9,7 @@ from errors import (
     LabelIsNotExistError,
     SecondLabelDeclarationError,
     StatementArgumentError,
-    UnknownCommandError
+    UnknownCommandError,
 )
 from isa import Opcode
 

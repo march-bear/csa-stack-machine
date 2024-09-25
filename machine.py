@@ -11,7 +11,7 @@ SIMULATION_ERROR_EXIT_CODE = 2
 
 
 def simulation(program, input_tokens: list = []):
-    if len(program) > 1 and isinstance(program, list):
+    if len(program) > 1 and isinstance(program[0], list):
         data = program[0]
         code = program[1:]
     else:
