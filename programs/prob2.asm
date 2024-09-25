@@ -20,11 +20,14 @@ loop:
     push 4000000
     dec
     jg end
+    del_tos
     dup
     mod2
     jz even
+    del_tos
     jmp update
 even:
+    del_tos
     dup
     push sum
     push_by
@@ -35,6 +38,7 @@ update:
     pop first
     jmp loop
 end:
+    del_tos
     push sum
     push_by
     print
