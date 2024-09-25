@@ -2,7 +2,7 @@
 + Марухленко Иван Сергеевич
 + Группа P3233
 + Вариант `lisp -> asm | stack | harv | hw | instr | binary -> struct | stream | port | pstr | prob2 | cache`
-+ Выполнен упрощенный вариант `asm | stack | harv | hw | instr | struct | stream | port | pstr | prob2 | -`
++ Выполнен: упрощенный `asm | stack | harv | hw | instr | struct | stream | port | pstr | prob2 | -`
 
 ## Язык программирования
 ### Синтаксис
