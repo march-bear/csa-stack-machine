@@ -46,7 +46,12 @@ def token_to_dict(token: str):
             return {}
         case 1:
             is_label = re.fullmatch(LABEL_PATTERN, _list[0])
-            return {"statement": _list[0].rstrip(":") if is_label else _list[0], "args": [], "is_label": is_label, "err": False}
+            return {
+                "statement": _list[0].rstrip(":") if is_label else _list[0],
+                "args": [],
+                "is_label": is_label,
+                "err": False,
+            }
         case _:
             args_str = _list[1]
             args = []
