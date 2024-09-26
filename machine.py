@@ -1,8 +1,9 @@
-import sys
 import json
 import logging
-from datapath import Datapath
+import sys
+
 from controlunit import ControlUnit
+from datapath import Datapath
 
 
 DONE_EXIT_CODE = 0

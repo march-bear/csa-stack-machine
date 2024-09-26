@@ -2,15 +2,9 @@ import json
 import re
 import sys
 
-from errors import (
-    ArgumentsError,
-    EmptyLabelError,
-    EmptySectionError,
-    InterpretationError,
-    LabelIsNotExistError,
-    NoSectionCodeError,
-    SecondLabelDeclarationError,
-)
+from errors import (ArgumentsError, EmptyLabelError, EmptySectionError,
+                    InterpretationError, LabelIsNotExistError,
+                    NoSectionCodeError, SecondLabelDeclarationError)
 from isa import Opcode
 
 MACHINE_WORD_MASK = 0xFFFFFFFF
@@ -30,6 +24,14 @@ def raise_if_not(sel, err):
         raise err
 
 
+def int_to_int32(num: int):
+    arg = num & MACHINE_WORD_MASK
+    if arg > MACHINE_WORD_MAX_POS:
+        arg -= MACHINE_WORD_MASK + 1
+
+    return arg
+
+
 def token_to_dict(token: str):
     _list = token.split(maxsplit=1)
 
@@ -39,8 +41,8 @@ def token_to_dict(token: str):
         case 1:
             if re.fullmatch(LABEL_PATTERN, _list[0]):
                 return {"statement": _list[0].rstrip(":"), "args": [], "is_label": True, "err": False}
-            else:
-                return {"statement": _list[0], "is_label": False, "err": False}
+
+            return {"statement": _list[0], "is_label": False, "err": False}
         case _:
             args_str = _list[1]
             args = []
@@ -53,9 +55,7 @@ def token_to_dict(token: str):
                     start = integer.start()
                     end = integer.end()
 
-                    arg = int(args_str[start:end]) & MACHINE_WORD_MASK
-                    if arg > MACHINE_WORD_MAX_POS:
-                        arg -= MACHINE_WORD_MASK + 1
+                    arg = int_to_int32(int(args_str[start:end]))
 
                     args.append()
                 elif string is not None:
@@ -105,7 +105,7 @@ def translate_data_section(lines: list, first_line: int = 1):
         if token_dict["is_label"]:
             label_name = token_dict["statement"]
             raise_if_not(label_name not in labels.keys(), SecondLabelDeclarationError(line_num))
-            raise_if_not(undef_label["name"] == None, EmptyLabelError(undef_label["line"]))
+            raise_if_not(undef_label["name"] is None, EmptyLabelError(undef_label["line"]))
 
             undef_label["name"] = label_name
             undef_label["addr"] = len(data)
@@ -154,7 +154,7 @@ def translate_code_section(lines: list, first_line: int = 0):
         if token_dict["is_label"]:
             label_name = token_dict["statement"]
             raise_if_not(label_name not in labels.keys(), SecondLabelDeclarationError(line_num))
-            raise_if_not(undef_label["name"] == None, EmptyLabelError(undef_label["line"]))
+            raise_if_not(undef_label["name"] is None, EmptyLabelError(undef_label["line"]))
 
             undef_label["name"] = label_name
             undef_label["addr"] = len(len(instrs))
