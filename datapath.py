@@ -93,7 +93,7 @@ class Datapath:
         return self.TOS < 0
 
     def output(self) -> None:
-        if (len(self.output_buf) < 8):
+        if len(self.output_buf) < 8:
             logging.debug("output: %s << %s", str(self.output_buf), repr(self.alu_value))
         else:
             output = "[..." + (", ".join([v for v in map(str, self.output_buf[-8:])])) + "]"

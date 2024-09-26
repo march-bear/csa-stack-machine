@@ -125,7 +125,9 @@ def translate_data_section(lines: list, first_line: int = 1):
                 raise_if_not(len(token_dict["args"]) in (1, 2), ArgumentsError(line_num))
                 first = token_dict["args"][0]
                 string = token_dict["args"][1] if len(token_dict["args"]) == 2 else ()
-                raise_if_not(isinstance(first, int) and (isinstance(string, str) or string == tuple()), ArgumentsError(line_num))
+                raise_if_not(
+                    isinstance(first, int) and (isinstance(string, str) or string == tuple()), ArgumentsError(line_num)
+                )
                 raise_if_not(string is tuple() or first == len(string), ArgumentsError(line_num))
 
                 data.append(first)
