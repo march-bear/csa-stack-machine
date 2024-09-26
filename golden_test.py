@@ -14,7 +14,7 @@ def test_translator_and_machine(golden, caplog):
     caplog.set_level(logging.DEBUG)
     formatter = logging.Formatter("[%(levelname)s]  %(message)s")
     caplog.handler.setFormatter(formatter)
-    
+
     with tempfile.TemporaryDirectory() as tmpdirname:
         source = os.path.join(tmpdirname, "source")
         input_stream = os.path.join(tmpdirname, "inputs")
