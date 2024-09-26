@@ -53,7 +53,7 @@ def token_to_dict(token: str):
                     start = integer.start()
                     end = integer.end()
 
-                    arg = int(args_str[start:end])  & MACHINE_WORD_MASK
+                    arg = int(args_str[start:end]) & MACHINE_WORD_MASK
                     if arg > MACHINE_WORD_MAX_POS:
                         arg -= MACHINE_WORD_MASK + 1
 
@@ -97,7 +97,7 @@ def translate_data_section(lines: list, first_line: int = 1):
 
         token_dict = token_to_dict()
 
-        if (len(token_dict) == 0):
+        if len(token_dict) == 0:
             continue
 
         raise_if_not(not token_dict["err"], ArgumentsError(line_num))
@@ -201,7 +201,7 @@ def translate_code_section(lines: list, first_line: int = 0):
                 raise_if_not(len(token_dict["args"]) == 1, ArgumentsError(line_num))
                 _arg = token_dict["args"][0]
                 raise_if_not(isinstance(arg, tuple), ArgumentsError(line_num))
-                
+
                 instrs.append({"opcode": opcode, "arg": _arg[0], "term": term})
             case _:
                 raise InterpretationError(line_num, "code_line")
