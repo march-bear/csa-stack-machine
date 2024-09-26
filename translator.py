@@ -2,7 +2,6 @@ import json
 import re
 import sys
 
-from isa import Opcode
 from errors import (
     ArgumentsError,
     EmptyLabelError,
@@ -12,6 +11,7 @@ from errors import (
     NoSectionCodeError,
     SecondLabelDeclarationError,
 )
+from isa import Opcode
 
 MACHINE_WORD_MASK = 0xFFFFFFFF
 MACHINE_WORD_MAX_POS = 0x0FFFFFFF
