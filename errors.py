@@ -20,7 +20,7 @@ class EmptySectionError(Exception):
 
 class NoSectionCodeError(Exception):
     def __init__(self) -> None:
-        super().__init__(f"there is section .data, but not section .code")
+        super().__init__("there is section .data, but not section .code")
 
 
 class InterpretationError(Exception):

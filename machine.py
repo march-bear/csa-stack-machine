@@ -5,7 +5,6 @@ import sys
 from controlunit import ControlUnit
 from datapath import Datapath
 
-
 DONE_EXIT_CODE = 0
 WRONG_SYS_ARGV_EXIT_CODE = 1
 SIMULATION_ERROR_EXIT_CODE = 2
@@ -64,7 +63,7 @@ def main(target, input_stream) -> None:
     if all(0 <= token < 0x110000 for token in output_buf):
         print("output:", "".join([chr(token) for token in output_buf]))
     else:
-        print(f"UNREADABLE output: {output_buf}")
+        print("output:", *output_buf)
     print(f"instr_counter: {instr_counter} ticks: {ticks}")
 
 
