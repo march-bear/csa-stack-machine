@@ -37,8 +37,8 @@ def simulation(program, input_tokens: list = []):
             logging.warning("output_buffer (string): UNREADABLE")
 
         logging.info(f"output_buffer (values): {dp.output_buf}")
-    except Exception as ex:
-        logging.exception(f"{ex.__class__.__name__}: {ex}")
+    except Exception:
+        logging.exception("Found an error")
         return SIMULATION_ERROR_EXIT_CODE, None
 
     ticks = cu._tick
