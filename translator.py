@@ -2,10 +2,16 @@ import json
 import re
 import sys
 
-from errors import (ArgumentsError, EmptyLabelError, EmptySectionError,
-                    InterpretationError, LabelIsNotExistError,
-                    NoSectionCodeError, SecondLabelDeclarationError)
 from isa import Opcode
+from errors import (
+    ArgumentsError,
+    EmptyLabelError,
+    EmptySectionError,
+    InterpretationError,
+    LabelIsNotExistError,
+    NoSectionCodeError,
+    SecondLabelDeclarationError,
+)
 
 MACHINE_WORD_MASK = 0xFFFFFFFF
 MACHINE_WORD_MAX_POS = 0x0FFFFFFF
