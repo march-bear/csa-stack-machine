@@ -10,8 +10,6 @@ from errors import (
     LabelIsNotExistError,
     NoSectionCodeError,
     SecondLabelDeclarationError,
-    StatementArgumentError,
-    UnknownCommandError,
 )
 from isa import Opcode
 
@@ -142,102 +140,76 @@ def translate_data_section(lines: list, first_line: int = 1):
 
 
 def translate_code_section(lines: list, first_line: int = 0):
-    result = []
+    instrs = []
     labels = {}
-    undef_label = None
+    undef_label = {"name": None, "addr": None, "line": None}
 
-    instr_counter = 0
     for line_num, line in enumerate(lines[first_line:], start=first_line + 1):
         lstrip_line = line.lstrip()
-        char_number = len(line) - len(lstrip_line)
         token = lstrip_line.rstrip()
+        token_dict = token_to_dict(token)
 
-        if token == "":
-            pass
-        elif re.fullmatch(LABEL_PATTERN, token):
-            if undef_label is not None:
-                raise EmptyLabelError(undef_label["line"], undef_label["name"])
+        raise_if_not(not token_dict["err"], ArgumentsError(line_num))
+        
+        if (token_dict["is_label"]):
+            label_name = token_dict["statement"]
+            raise_if_not(label_name not in labels.keys(), SecondLabelDeclarationError(line_num))
+            raise_if_not(undef_label["name"] == None, EmptyLabelError(undef_label["line"]))
 
-            label_name = token.rstrip(":")
-            if label_name in labels.keys():
-                raise SecondLabelDeclarationError(line_num, label_name)
+            undef_label["name"] = label_name
+            undef_label["addr"] = len(len(instrs))
+            undef_label["line"] = line_num
+            continue
 
-            undef_label = {"name": label_name, "line": line_num}
-        elif re.fullmatch(COMMAND_LINE_PATTERN, token):
-            args_line = None
-            if len(_splited_token := token.split(maxsplit=1)) == 1:
-                command = _splited_token[0]
-            else:
-                command, args_line = _splited_token
+        opcode = token_dict["statement"].lower()
+        term = [line_num, len(line) - len(lstrip_line), token]
+        
+        match opcode:
+            case (
+                Opcode.DUP
+                | Opcode.ADD
+                | Opcode.DEC
+                | Opcode.SWAP
+                | Opcode.MOD2
+                | Opcode.PRINT
+                | Opcode.INPUT
+                | Opcode.PUSH_BY
+                | Opcode.POP_BY
+                | Opcode.DEL_TOS
+                | Opcode.HALT
+            ):
+                raise_if_not(len(token_dict["args"]) == 0, ArgumentsError(line_num))
+                instrs.append({"opcode": opcode, "term": term})
+            case Opcode.JMP | Opcode.JZ | Opcode.JG:
+                raise_if_not(len(token_dict["args"]) == 1, ArgumentsError(line_num))
+                arg = token_dict["args"][0]
+                raise_if_not(isinstance(arg, tuple), ArgumentsError(line_num))
+                label = arg[0]
+                instrs.append({"opcode": opcode, "arg": label, "term": term})
+            case Opcode.PUSH:
+                raise_if_not(len(token_dict["args"]) == 1, ArgumentsError(line_num))
+                _arg = token_dict["args"][0]
+                if (isinstance(_arg, tuple)):
+                    arg = _arg[0]
+                elif (isinstance(_arg, int)):
+                    arg = _arg
+                else:
+                    raise ArgumentsError(line_num)
+                
+                instrs.append({"opcode": opcode, "arg": arg, "term": term})
+            case Opcode.POP:
+                raise_if_not(len(token_dict["args"]) == 1, ArgumentsError(line_num))
+                _arg = token_dict["args"][0]
+                raise_if_not(isinstance(arg, tuple), ArgumentsError(line_num))
+                
+                instrs.append({"opcode": opcode, "arg": _arg[0], "term": term})
+            case _:
+                raise InterpretationError(line_num, "code_line")
 
-            arg = None
-            match command := command.lower():
-                case (
-                    Opcode.DUP
-                    | Opcode.ADD
-                    | Opcode.DEC
-                    | Opcode.SWAP
-                    | Opcode.MOD2
-                    | Opcode.PRINT
-                    | Opcode.INPUT
-                    | Opcode.PUSH_BY
-                    | Opcode.POP_BY
-                    | Opcode.DEL_TOS
-                    | Opcode.HALT
-                ):
-                    if args_line is not None:
-                        raise ArgumentsError(line_num, line, command)
-
-                case Opcode.JMP | Opcode.JZ | Opcode.JG:
-                    if args_line is None or not re.fullmatch(LABEL_NAME_PATTERN, args_line):
-                        raise ArgumentsError(line_num, line, command, ["label_name"])
-
-                    arg = args_line
-                case Opcode.PUSH:
-                    if args_line is None:
-                        args_line = ""
-
-                    if re.fullmatch(INTEGER_PATTERN, args_line):
-                        arg = int(args_line)
-                    elif re.fullmatch(LABEL_NAME_PATTERN, args_line):
-                        arg = args_line
-                    else:
-                        raise ArgumentsError(line_num, line, command, ["integer, label_name"])
-                case Opcode.POP:
-                    if args_line is None:
-                        args_line = ""
-
-                    if re.fullmatch(LABEL_NAME_PATTERN, args_line):
-                        arg = args_line
-                    else:
-                        raise ArgumentsError(line_num, line, command, ["label_name"])
-                case _:
-                    raise UnknownCommandError(line_num, command)
-
-            instr_info = {}
-            instr_info["opcode"] = command
-            if arg is not None:
-                if isinstance(arg, int):
-                    arg = arg & MACHINE_WORD_MASK
-                    if arg > MACHINE_WORD_MAX_POS:
-                        arg -= MACHINE_WORD_MASK + 1
-                instr_info["arg"] = arg
-            instr_info["term"] = [line_num, char_number, token]
-
-            result.append(instr_info)
-
-            if undef_label is not None:
-                labels[undef_label["name"]] = {"instr": instr_counter, "line": undef_label["line"]}
-                undef_label = None
-
-            instr_counter += 1
-        else:
-            raise InterpretationError(line_num, line, "code line")
-
-    if undef_label is not None:
-        raise EmptyLabelError(undef_label["line"], undef_label["line"])
-
-    return result, labels
+    raise_if_not(len(instr) > 0, EmptySectionError(line_num, ".code"))
+    raise_if_not(undef_label["name"] is None, EmptyLabelError(undef_label["line"]))
+        
+    return instrs, labels
 
 
 def replace_label_names(code, instr_labels, data_labels):
