@@ -88,6 +88,6 @@ if __name__ == "__main__":
         with open(input_file) as ifile:
             input_tokens = ifile.read()
 
-    exit_code, _ = simulation(program, [ord(ch) for ch in input_tokens])
+    exit_code, _, _, _ = simulation(program, [ord(ch) for ch in input_tokens])
 
     sys.exit(exit_code)
