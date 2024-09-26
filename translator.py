@@ -18,15 +18,12 @@ MACHINE_WORD_MAX_POS = 0x0FFFFFFF
 
 LABEL_PATTERN = r"[a-zA-Z_][a-zA-Z0-9_]*:"
 LABEL_NAME_PATTERN = r"[a-zA-Z_][a-zA-Z0-9_]*"
-COMMAND_LINE_PATTERN = r"[a-zA-Z][a-zA-Z0-9_]*(?: +\w+)?"
-WORD_LINE_PATTERN = r"word(?: +.+)"
-BUF_LINE_PATTERN = r"buf(?: +\-?(?:0|[1-9][0-9]*))"
 INTEGER_PATTERN = r"\-?(?:0|[1-9][0-9]*)"
-STRING_DEFINITION_PATTERN = r"\-?(?:0|[1-9][0-9]*), *(?:\'[^\']*\'|\"[^\"]*\")"
+STRING_DEFINITION_PATTERN = r"(?:\'[^\']*\'|\"[^\"]*\")"
 
 
 def raise_if_not(sel, err):
-    if sel:
+    if not sel:
         raise err
 
 
@@ -58,7 +55,7 @@ def token_to_dict(token: str):
             while args_str != "":
                 integer = re.match(INTEGER_PATTERN, args_str)
                 string = re.match(STRING_DEFINITION_PATTERN, args_str)
-                label_name = re.match(LABEL_NAME_PATTERN)
+                label_name = re.match(LABEL_NAME_PATTERN, args_str)
 
                 if integer is not None:
                     start = integer.start()
@@ -66,7 +63,7 @@ def token_to_dict(token: str):
 
                     arg = int_to_int32(int(args_str[start:end]))
 
-                    args.append()
+                    args.append(arg)
                 elif string is not None:
                     start = string.start()
                     end = string.end()
@@ -104,7 +101,7 @@ def translate_data_section(lines: list, first_line: int = 1):
             raise_if_not(len(data) > 0, EmptySectionError(line_num - 1, ".data"))
             return data, line_num - 1, labels
 
-        token_dict = token_to_dict()
+        token_dict = token_to_dict(token)
 
         if len(token_dict) == 0:
             continue
@@ -125,24 +122,24 @@ def translate_data_section(lines: list, first_line: int = 1):
             case "":
                 continue
             case "word":
-                raise_if_not(len(token_dict["args"]) == 2, ArgumentsError(line_num))
-                length = token_dict["args"][0]
-                string = token_dict["args"][1]
-                raise_if_not(isinstance(length, int) and isinstance(string, str), ArgumentsError(line_num))
-                raise_if_not(length == len(string) and length != 0, ArgumentsError(line_num))
+                raise_if_not(len(token_dict["args"]) in (1, 2), ArgumentsError(line_num))
+                first = token_dict["args"][0]
+                string = token_dict["args"][1] if len(token_dict["args"]) == 2 else ()
+                raise_if_not(isinstance(first, int) and (isinstance(string, str) or string == tuple()), ArgumentsError(line_num))
+                raise_if_not(string is tuple() or first == len(string), ArgumentsError(line_num))
 
-                data.append(length)
-                data.append(ord(ch) for ch in string)
+                data.append(first)
+                [data.append(ord(ch)) for ch in string]
             case "buf":
                 raise_if_not(len(token_dict["args"]) == 1, ArgumentsError(line_num))
                 arg = token_dict["args"][0]
                 raise_if_not(isinstance(arg, int), ArgumentsError(line_num))
-                raise_if_not(arg > 0)
+                raise_if_not(arg > 0, ArgumentsError(line_num))
 
-                data.append(0 for _ in range(arg))
+                [data.append(0) for _ in range(arg)]
 
         if undef_label["name"] is not None:
-            labels["name"] = undef_label["addr"]
+            labels[undef_label["name"]] = undef_label["addr"]
             undef_label["name"] = None
 
     raise NoSectionCodeError()
@@ -158,6 +155,9 @@ def translate_code_section(lines: list, first_line: int = 0):
         token = lstrip_line.rstrip()
         token_dict = token_to_dict(token)
 
+        if len(token_dict) == 0:
+            continue
+
         raise_if_not(not token_dict["err"], ArgumentsError(line_num))
 
         if token_dict["is_label"]:
@@ -166,7 +166,7 @@ def translate_code_section(lines: list, first_line: int = 0):
             raise_if_not(undef_label["name"] is None, EmptyLabelError(undef_label["line"]))
 
             undef_label["name"] = label_name
-            undef_label["addr"] = len(len(instrs))
+            undef_label["addr"] = len(instrs)
             undef_label["line"] = line_num
             continue
 
@@ -209,13 +209,16 @@ def translate_code_section(lines: list, first_line: int = 0):
             case Opcode.POP:
                 raise_if_not(len(token_dict["args"]) == 1, ArgumentsError(line_num))
                 _arg = token_dict["args"][0]
-                raise_if_not(isinstance(arg, tuple), ArgumentsError(line_num))
+                raise_if_not(isinstance(_arg, tuple), ArgumentsError(line_num))
 
                 instrs.append({"opcode": opcode, "arg": _arg[0], "term": term})
             case _:
                 raise InterpretationError(line_num, "code_line")
 
-    raise_if_not(len(instr) > 0, EmptySectionError(line_num, ".code"))
+        labels[undef_label["name"]] = undef_label["addr"]
+        undef_label["name"] = None
+
+    raise_if_not(len(instrs) > 0, EmptySectionError(line_num, ".code"))
     raise_if_not(undef_label["name"] is None, EmptyLabelError(undef_label["line"]))
 
     return instrs, labels
@@ -233,7 +236,7 @@ def replace_label_names(code, instr_labels, data_labels):
                 if instr["arg"] not in instr_labels.keys():
                     raise LabelIsNotExistError(instr["arg"], "instr")
 
-                instr["arg"] = instr_labels[instr["arg"]]["instr"]
+                instr["arg"] = instr_labels[instr["arg"]]
             case Opcode.POP | Opcode.PUSH:
                 if isinstance(instr["arg"], str):
                     if instr["arg"] not in data_labels.keys():
@@ -321,4 +324,5 @@ if __name__ == "__main__":
 
         print("translation is succesful")
     except Exception as ex:
+        raise ex
         print(f"error: {ex.__class__.__name__}: {ex}\n")
