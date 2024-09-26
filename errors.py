@@ -1,20 +1,26 @@
 class EmptyLabelError(Exception):
-    def __init__(self, line_number, label_name) -> None:
-        self.message = f"line {line_number}: label {label_name} doesn't indicate anything"
-        super().__init__(self.message)
+    def __init__(self, line_number: int) -> None:
+        super().__init__(f"line {line_number}: label doesn't indicate anything")
 
 
 class SecondLabelDeclarationError(Exception):
-    def __init__(self, line_number, label_name) -> None:
-        self.message = f"line {line_number}: second label declaration {label_name}"
-        super().__init__(self.message)
+    def __init__(self, line_number: int) -> None:
+        super().__init__(f"line {line_number}: second label declaration")
 
 
 class LabelIsNotExistError(Exception):
     def __init__(self, label_name, tag: str) -> None:
-        self.message = f"{tag} label {label_name} is not exist"
-        super().__init__(self.message)
+        super().__init__(f"{tag} label {label_name} is not exist")
 
+
+class EmptySectionError(Exception):
+    def __init__(self, line_num: int, tag: str) -> None:
+        super().__init__(f"line {line_num}: section {tag} doesn't contain any data")
+
+
+class NoSectionCodeError(Exception):
+    def __init__(self) -> None:
+        super().__init__(f"there is section .data, but not section .code")
 
 class InterpretationError(Exception):
     def __init__(self, line_number, line, obj: str) -> None:
@@ -23,12 +29,8 @@ class InterpretationError(Exception):
 
 
 class ArgumentsError(Exception):
-    def __init__(self, line_number, line, command_name, formats: list = []) -> None:
-        if len(formats) == 0:
-            self.message = f"line {line_number}: command {command_name} doesn't require any arguments:\n {line}"
-        else:
-            self.message = f"line {line_number}: command {command_name} takes 1 argument in format {', or'.join(['<' + str(form) + '>' for form in formats])}:\n{line}"
-        super().__init__(self.message)
+    def __init__(self, line_number: int) -> None:
+        super().__init__(f"line {line_number}: invalid argument format")
 
 
 class StatementArgumentError(Exception):

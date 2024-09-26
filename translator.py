@@ -5,8 +5,10 @@ import sys
 from errors import (
     ArgumentsError,
     EmptyLabelError,
+    EmptySectionError,
     InterpretationError,
     LabelIsNotExistError,
+    NoSectionCodeError,
     SecondLabelDeclarationError,
     StatementArgumentError,
     UnknownCommandError,
@@ -25,59 +27,118 @@ INTEGER_PATTERN = r"\-?(?:0|[1-9][0-9]*)"
 STRING_DEFINITION_PATTERN = r"\-?(?:0|[1-9][0-9]*), *(?:\'[^\']*\'|\"[^\"]*\")"
 
 
+def raise_if_not(sel, err):
+    if (sel):
+        raise err
+
+
+def token_to_dict(token: str):
+    _list = token.split(maxsplit=1)
+
+    match len(_list):
+        case 0:
+            return {}
+        case 1:
+            if re.fullmatch(LABEL_PATTERN, _list[0]):
+                return {"statement": _list[0].rstrip(":"), "args": [], "is_label": True, "err": False}
+            else:
+                return {"statement": _list[0], "is_label": False, "err": False}
+        case _:
+            args_str = _list[1]
+            args = []
+            while (args_str != ""):
+                integer = re.match(INTEGER_PATTERN, args_str)
+                string = re.match(STRING_DEFINITION_PATTERN, args_str)
+                label_name = re.match(LABEL_NAME_PATTERN)
+
+                if (integer is not None):
+                    start = integer.start()
+                    end = integer.end()
+
+                    arg = int(args_str[start:end])  & MACHINE_WORD_MASK
+                    if arg > MACHINE_WORD_MAX_POS:
+                        arg -= MACHINE_WORD_MASK + 1
+
+                    args.append()
+                elif (string is not None):
+                    start = string.start()
+                    end = string.end()
+
+                    string_def = args_str[start:end]
+                    arg = string_def.strip('"') if string_def[0] == '"' else string_def.strip("'")
+                    args.append(arg)
+                elif (label_name is not None):
+                    start = label_name.start()
+                    end = label_name.end()
+
+                    arg = args_str[start:end]
+                    args.append(tuple([arg]))
+                else:
+                    return {"err": True}
+
+                args_str = args_str[end:]
+                if (args_str != "" and args_str[0] != ","):
+                    return {"err": True}
+                
+                args_str = args_str[1:].lstrip()
+
+            return {"statement": _list[0], "args": args, "is_label": False, "err": False}
+
+
 def translate_data_section(lines: list, first_line: int = 1):
     data = []
     labels = {}
-    undef_label = None
+    undef_label = {"name": None, "line": None, "addr": None}
 
     for line_num, line in enumerate(lines[first_line:], start=first_line + 1):
         token = line.strip()
 
-        if token == "":
-            pass
-        elif token == "section .code":
-            assert len(data) > 0, "section .data doesn't contain any data"
-            break
-        elif re.fullmatch(LABEL_PATTERN, token):
-            if undef_label is not None:
-                raise EmptyLabelError(undef_label["line"], undef_label["name"])
+        if (token == "section .code"):
+            raise_if_not(len(data) > 0, EmptySectionError(line_num - 1, ".data"))
+            return data, line_num - 1, labels
 
-            label_name = token.rstrip(":")
-            if label_name in labels.keys():
-                raise SecondLabelDeclarationError(line_num, label_name)
+        token_dict = token_to_dict()
 
-            undef_label = {"name": label_name, "line": line_num, "addr": len(data)}
-        elif re.fullmatch(WORD_LINE_PATTERN, token, flags=re.IGNORECASE):
-            args_line = token.split(maxsplit=1)[1]
-            if re.fullmatch(INTEGER_PATTERN, args_line):
-                data.append(int(args_line))
-            elif re.fullmatch(STRING_DEFINITION_PATTERN, args_line):
-                length, _string = args_line.split(", ", maxsplit=1)
-                string = _string.strip()[1:-1]
+        if (len(token_dict) == 0):
+            continue
 
-                data.append(int(length))
-                [data.append(ord(ch)) for ch in string]
-            else:
-                raise StatementArgumentError(line_num, "word")
+        raise_if_not(not token_dict["err"], ArgumentsError(line_num))
+        
+        if (token_dict["is_label"]):
+            label_name = token_dict["statement"]
+            raise_if_not(label_name not in labels.keys(), SecondLabelDeclarationError(line_num))
+            raise_if_not(undef_label["name"] == None, EmptyLabelError(undef_label["line"]))
 
-            if undef_label is not None:
-                labels[undef_label["name"]] = undef_label["addr"]
-                undef_label = None
-        elif re.fullmatch(BUF_LINE_PATTERN, token, flags=re.IGNORECASE):
-            arg = int(token.split(maxsplit=1)[1])
-            assert arg > 0, f"line {line_num}: buf size can't be negative or 0"
-            [data.append(0) for _ in range(arg)]
+            undef_label["name"] = label_name
+            undef_label["addr"] = len(data)
+            undef_label["line"] = line_num
+            continue
 
-            if undef_label is not None:
-                labels[undef_label["name"]] = undef_label["addr"]
-                undef_label = None
-        else:
-            raise InterpretationError(line_num, line, "data line")
+        match token_dict["statement"].lower():
+            case "":
+                continue
+            case "word":
+                raise_if_not(len(token_dict["args"]) == 2, ArgumentsError(line_num))
+                length = token_dict["args"][0]
+                string = token_dict["args"][1]
+                raise_if_not(isinstance(length, int) and isinstance(string, str), ArgumentsError(line_num))
+                raise_if_not(length == len(string) and length != 0, ArgumentsError(line_num))
 
-    if undef_label is not None:
-        raise EmptyLabelError(undef_label["line"], undef_label["name"])
+                data.append(length)
+                data.append(ord(ch) for ch in string)
+            case "buf":
+                raise_if_not(len(token_dict["args"]) == 1, ArgumentsError(line_num))
+                arg = token_dict["args"][0]
+                raise_if_not(isinstance(arg, int), ArgumentsError(line_num))
+                raise_if_not(arg > 0)
 
-    return data, line_num - 1, labels
+                data.append(0 for _ in range(arg))
+
+        if (undef_label["name"] is not None):
+            labels["name"] = undef_label["addr"]
+            undef_label["name"] = None
+    
+    raise NoSectionCodeError()
 
 
 def translate_code_section(lines: list, first_line: int = 0):
