@@ -38,7 +38,7 @@ class Datapath:
         self.alu_value = 0
         self.arg_value = 0
 
-    def alu(self, lsel: LAluSel, rsel: RAluSel, opsel: AluOpSel = AluOpSel.PLUS, modsel: AluModSel = AluModSel.NONE) -> None:
+    def alu(self, lsel: LAluSel, rsel: RAluSel, opsel: AluOpSel = AluOpSel.PLUS, modsel: AluModSel = AluModSel.NONE):
         left = self.stack.peek() if (lsel == LAluSel.STACK) else 0
         right = self.TOS if (rsel == RAluSel.TOS) else 0
 
