@@ -1,5 +1,0 @@
-[{"opcode": "input", "term": [1, 4, "input"]},
- {"opcode": "jz", "term": [2, 4, "jz end"], "arg": 4},
- {"opcode": "print", "term": [3, 4, "print"]},
- {"opcode": "jmp", "term": [4, 4, "jmp loop"], "arg": 0},
- {"opcode": "halt", "term": [6, 4, "halt"]}]
