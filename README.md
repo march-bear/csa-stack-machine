@@ -220,6 +220,76 @@ label_name ::= <any of "a-z A-Z _"> { <any of "a-z A-Z 0-9 _"> }
 + [prob2.yml](./golden/prob2.yml) - вычисляет сумму четных чисел Фибоначчи, не превышающих 4000000
 + [overflow.yml](./golden/overflow.yml) - выводит сумму 2^31 - 1 и 1, тест на переполнение типа
 
+CI через GitHub Actions:
+```
+name: Python CI
+
+on:
+  push:
+    branches:
+      - main
+
+defaults:
+  run:
+    working-directory: .
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry install
+
+      - name: Run tests and collect coverage
+        run: |
+          poetry run coverage run -m pytest .
+          poetry run coverage report -m
+        env:
+          CI: true
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry install
+
+      - name: Check code formatting with Ruff
+        run: poetry run ruff format --check --diff .
+
+      - name: Run Ruff linters
+        run: poetry run ruff check .
+```
+
+Используемые утилиты:
++ `poetry` - управление зависимостями для языка программирования Python.
++ `coverage` -- формирование отчёта об уровне покрытия исходного кода.
++ `pytest` -- запуск тестов.
++ `ruff` -- форматирование и проверка стиля кодирования.
+
 Рассмотрим алгоритм [cat.asm](./programs/cat.asm):
 ```
 loop:
@@ -340,7 +410,7 @@ golden_test.py::test_translator_and_machine[golden/prob2.yml] PASSED  [100%]
 ============================ 5 passed in 0.47s =============================
 ```
 
-Сводка по тестам:
+Сводка статистики по тестам:
 ```
 | ФИО                       | алг             | LoC  | code инстр. | инстр.   | такт.  |
 | Марухленко Иван Сергеевич | hello           | 24   | 15          | 148      | 466    |
