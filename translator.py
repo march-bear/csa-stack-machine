@@ -296,7 +296,11 @@ def main(code, target):
         with open(output_file, "w") as ofile:
             ofile.write("[" + ",\n ".join(buf) + "]")
 
-        print("LoC:", len(program.split("\n")), "code instr:", len(code))
+        code_instr = len(code)
+        if (len(code) > 0 and isinstance(code[0], list)):
+            code_instr -= 1
+
+        print("LoC:", len(program.split("\n")), "code_instr:", code_instr)
     except Exception as ex:
         print(f"error: {ex.__class__.__name__}: {ex}\n")
 

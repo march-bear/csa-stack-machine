@@ -43,10 +43,10 @@ out_code: |-
    {"opcode": "jmp", "arg": 3, "term": [22, 4, "jmp printing"]},
    {"opcode": "halt", "term": [24, 4, "halt"]}]
 out_stdout: |
-  LoC: 24 code instr: 16
+  LoC: 24 code_instr: 15
   ============================================================
   output: Hello, World!
-  instr_counter: 147 ticks: 466
+  instr_counter: 148 ticks: 466
 out_log: |
   [DEBUG]  TICK:   0 IP:   0 AR:   0 MEM_OUT:  13 INSTR: push 0     TOS:   0 STACK: []
   [DEBUG]  TICK:   3 IP:   1 AR:   0 MEM_OUT:  13 INSTR: dup        TOS:   0 STACK: [0]

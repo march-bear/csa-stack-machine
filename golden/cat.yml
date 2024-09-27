@@ -15,10 +15,10 @@ out_code: |-
    {"opcode": "jmp", "arg": 0, "term": [5, 4, "jmp loop"]},
    {"opcode": "halt", "term": [7, 4, "halt"]}]
 out_stdout: |
-  LoC: 7 code instr: 5
+  LoC: 7 code_instr: 5
   ============================================================
   output: Ivan M.
-  instr_counter: 30 ticks: 75
+  instr_counter: 31 ticks: 75
 out_log: |
   [DEBUG]  TICK:   0 IP:   0 AR:   0 MEM_OUT:   0 INSTR: input      TOS:   0 STACK: []
   [DEBUG]  input: 73

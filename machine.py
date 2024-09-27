@@ -25,6 +25,7 @@ def simulation(program, input_tokens: list = []):
             logging.debug("%s", cu)
     except StopIteration:
         logging.info("Simulation ended!")
+        instr_counter += 1
         if all(0 <= token < 0x110000 for token in dp.output_buf):
             pass
             logging.info(f"output_buffer (string): {''.join([chr(token) for token in dp.output_buf])}")

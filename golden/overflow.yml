@@ -21,10 +21,10 @@ out_code: |-
    {"opcode": "print", "term": [10, 4, "print"]},
    {"opcode": "halt", "term": [11, 4, "halt"]}]
 out_stdout: |
-  LoC: 11 code instr: 7
+  LoC: 11 code_instr: 6
   ============================================================
   output: -2147483648
-  instr_counter: 5 ticks: 17
+  instr_counter: 6 ticks: 17
 out_log: |
   [DEBUG]  TICK:   0 IP:   0 AR:   0 MEM_OUT: 2147483647 INSTR: push 0     TOS:   0 STACK: []
   [DEBUG]  TICK:   3 IP:   1 AR:   0 MEM_OUT: 2147483647 INSTR: push_by    TOS:   0 STACK: [0]

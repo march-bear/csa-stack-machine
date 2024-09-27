@@ -195,11 +195,11 @@ out_code: |-
    {"opcode": "del_tos", "term": [109, 4, "del_tos"]},
    {"opcode": "halt", "term": [110, 4, "halt"]}]
 out_stdout: |
-  LoC: 110 code instr: 82
+  LoC: 110 code_instr: 81
   ============================================================
   output: What's your name?
   Hello, Ivan M.
-  instr_counter: 494 ticks: 1563
+  instr_counter: 495 ticks: 1563
 out_log: |
   [DEBUG]  TICK:   0 IP:   0 AR:   0 MEM_OUT:  17 INSTR: push 0     TOS:   0 STACK: []
   [DEBUG]  TICK:   3 IP:   1 AR:   0 MEM_OUT:  17 INSTR: dup        TOS:   0 STACK: [0]
