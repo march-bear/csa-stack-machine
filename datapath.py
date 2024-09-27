@@ -7,7 +7,7 @@ from sels import AluModSel, AluOpSel, LAluSel, RAluSel, TosInSel
 DATA_MEM_SIZE = 64
 STACK_SIZE = 64
 MACHINE_WORD_MASK = 0xFFFFFFFF
-MACHINE_WORD_MAX_POS = 0x0FFFFFFF
+MACHINE_WORD_MAX_POS = 0x7FFFFFFF
 
 
 class Datapath:

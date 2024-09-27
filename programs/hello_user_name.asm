@@ -9,9 +9,6 @@ new_line_ch:
 greeting:
     word 7, "Hello, "
 
-exclamation:
-    word 1, "!"
-
 name:
     buf 16
 
@@ -47,7 +44,7 @@ reading:
     jz end_reading
     swap
     pop_by
-
+    swap
     push 1
     add
     swap
@@ -65,7 +62,6 @@ buf_overflow:
     jmp push_size
 end_reading:
     del_tos
-    swap
 push_size:
     push name
     pop_by
@@ -110,4 +106,3 @@ end_name:
     del_tos
     del_tos
     halt
-

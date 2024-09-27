@@ -45,7 +45,7 @@ in_source: |-
       print
       halt
 in_stdin: |-
-  foo
+  Ivan M.
 out_code: |-
   [[1, 1, 0],
    {"opcode": "push", "arg": 1, "term": [11, 4, "push second"]},
@@ -81,7 +81,7 @@ out_code: |-
 out_stdout: |
   LoC: 45 code instr: 31
   ============================================================
-  UNREADABLE output: [4613732]
+  output: 4613732
   instr_counter: 647 ticks: 2057
 out_log: |
   [DEBUG]  TICK:   0 IP:   0 AR:   0 MEM_OUT:   1 INSTR: push 1     TOS:   0 STACK: []

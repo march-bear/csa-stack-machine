@@ -1,0 +1,38 @@
+in_source: |-
+  section .data
+    max_word:
+        word 2147483647
+
+  section .code
+    push max_word
+    push_by
+    push 1
+    add
+    print
+    halt
+in_stdin: |-
+  Ivan M.
+out_code: |-
+  [[2147483647],
+   {"opcode": "push", "arg": 0, "term": [6, 4, "push max_word"]},
+   {"opcode": "push_by", "term": [7, 4, "push_by"]},
+   {"opcode": "push", "arg": 1, "term": [8, 4, "push 1"]},
+   {"opcode": "add", "term": [9, 4, "add"]},
+   {"opcode": "print", "term": [10, 4, "print"]},
+   {"opcode": "halt", "term": [11, 4, "halt"]}]
+out_stdout: |
+  LoC: 11 code instr: 7
+  ============================================================
+  output: -2147483648
+  instr_counter: 5 ticks: 17
+out_log: |
+  [DEBUG]  TICK:   0 IP:   0 AR:   0 MEM_OUT: 2147483647 INSTR: push 0     TOS:   0 STACK: []
+  [DEBUG]  TICK:   3 IP:   1 AR:   0 MEM_OUT: 2147483647 INSTR: push_by    TOS:   0 STACK: [0]
+  [DEBUG]  TICK:   6 IP:   2 AR:   0 MEM_OUT: 2147483647 INSTR: push 1     TOS: 2147483647 STACK: [0]
+  [DEBUG]  TICK:   9 IP:   3 AR:   0 MEM_OUT: 2147483647 INSTR: add        TOS:   1 STACK: [0, 2147483647]
+  [DEBUG]  TICK:  12 IP:   4 AR:   0 MEM_OUT: 2147483647 INSTR: print      TOS: -2147483648 STACK: [0]
+  [DEBUG]  output: [] << -2147483648
+  [DEBUG]  TICK:  16 IP:   5 AR:   0 MEM_OUT: 2147483647 INSTR: halt       TOS:   0 STACK: []
+  [INFO]  Simulation ended!
+  [WARNING]  output_buffer (string): UNREADABLE
+  [INFO]  output_buffer (values): [-2147483648]

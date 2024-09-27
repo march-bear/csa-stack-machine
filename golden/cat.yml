@@ -7,7 +7,7 @@ in_source: |-
   end:
       halt
 in_stdin: |-
-  foo
+  Ivan M.
 out_code: |-
   [{"opcode": "input", "term": [2, 4, "input"]},
    {"opcode": "jz", "arg": 4, "term": [3, 4, "jz end"]},
@@ -17,32 +17,56 @@ out_code: |-
 out_stdout: |
   LoC: 7 code instr: 5
   ============================================================
-  output: foo
-  instr_counter: 14 ticks: 35
+  output: Ivan M.
+  instr_counter: 30 ticks: 75
 out_log: |
   [DEBUG]  TICK:   0 IP:   0 AR:   0 MEM_OUT:   0 INSTR: input      TOS:   0 STACK: []
-  [DEBUG]  input: 102
-  [DEBUG]  TICK:   2 IP:   1 AR:   0 MEM_OUT:   0 INSTR: jz 4       TOS: 102 STACK: [0]
-  [DEBUG]  TICK:   4 IP:   2 AR:   0 MEM_OUT:   0 INSTR: print      TOS: 102 STACK: [0]
-  [DEBUG]  output: [] << 102
+  [DEBUG]  input: 73
+  [DEBUG]  TICK:   2 IP:   1 AR:   0 MEM_OUT:   0 INSTR: jz 4       TOS:  73 STACK: [0]
+  [DEBUG]  TICK:   4 IP:   2 AR:   0 MEM_OUT:   0 INSTR: print      TOS:  73 STACK: [0]
+  [DEBUG]  output: [] << 73
   [DEBUG]  TICK:   8 IP:   3 AR:   0 MEM_OUT:   0 INSTR: jmp 0      TOS:   0 STACK: []
   [DEBUG]  TICK:  10 IP:   0 AR:   0 MEM_OUT:   0 INSTR: input      TOS:   0 STACK: []
-  [DEBUG]  input: 111
-  [DEBUG]  TICK:  12 IP:   1 AR:   0 MEM_OUT:   0 INSTR: jz 4       TOS: 111 STACK: [0]
-  [DEBUG]  TICK:  14 IP:   2 AR:   0 MEM_OUT:   0 INSTR: print      TOS: 111 STACK: [0]
-  [DEBUG]  output: [102] << 111
+  [DEBUG]  input: 118
+  [DEBUG]  TICK:  12 IP:   1 AR:   0 MEM_OUT:   0 INSTR: jz 4       TOS: 118 STACK: [0]
+  [DEBUG]  TICK:  14 IP:   2 AR:   0 MEM_OUT:   0 INSTR: print      TOS: 118 STACK: [0]
+  [DEBUG]  output: [73] << 118
   [DEBUG]  TICK:  18 IP:   3 AR:   0 MEM_OUT:   0 INSTR: jmp 0      TOS:   0 STACK: []
   [DEBUG]  TICK:  20 IP:   0 AR:   0 MEM_OUT:   0 INSTR: input      TOS:   0 STACK: []
-  [DEBUG]  input: 111
-  [DEBUG]  TICK:  22 IP:   1 AR:   0 MEM_OUT:   0 INSTR: jz 4       TOS: 111 STACK: [0]
-  [DEBUG]  TICK:  24 IP:   2 AR:   0 MEM_OUT:   0 INSTR: print      TOS: 111 STACK: [0]
-  [DEBUG]  output: [102, 111] << 111
+  [DEBUG]  input: 97
+  [DEBUG]  TICK:  22 IP:   1 AR:   0 MEM_OUT:   0 INSTR: jz 4       TOS:  97 STACK: [0]
+  [DEBUG]  TICK:  24 IP:   2 AR:   0 MEM_OUT:   0 INSTR: print      TOS:  97 STACK: [0]
+  [DEBUG]  output: [73, 118] << 97
   [DEBUG]  TICK:  28 IP:   3 AR:   0 MEM_OUT:   0 INSTR: jmp 0      TOS:   0 STACK: []
   [DEBUG]  TICK:  30 IP:   0 AR:   0 MEM_OUT:   0 INSTR: input      TOS:   0 STACK: []
+  [DEBUG]  input: 110
+  [DEBUG]  TICK:  32 IP:   1 AR:   0 MEM_OUT:   0 INSTR: jz 4       TOS: 110 STACK: [0]
+  [DEBUG]  TICK:  34 IP:   2 AR:   0 MEM_OUT:   0 INSTR: print      TOS: 110 STACK: [0]
+  [DEBUG]  output: [73, 118, 97] << 110
+  [DEBUG]  TICK:  38 IP:   3 AR:   0 MEM_OUT:   0 INSTR: jmp 0      TOS:   0 STACK: []
+  [DEBUG]  TICK:  40 IP:   0 AR:   0 MEM_OUT:   0 INSTR: input      TOS:   0 STACK: []
+  [DEBUG]  input: 32
+  [DEBUG]  TICK:  42 IP:   1 AR:   0 MEM_OUT:   0 INSTR: jz 4       TOS:  32 STACK: [0]
+  [DEBUG]  TICK:  44 IP:   2 AR:   0 MEM_OUT:   0 INSTR: print      TOS:  32 STACK: [0]
+  [DEBUG]  output: [73, 118, 97, 110] << 32
+  [DEBUG]  TICK:  48 IP:   3 AR:   0 MEM_OUT:   0 INSTR: jmp 0      TOS:   0 STACK: []
+  [DEBUG]  TICK:  50 IP:   0 AR:   0 MEM_OUT:   0 INSTR: input      TOS:   0 STACK: []
+  [DEBUG]  input: 77
+  [DEBUG]  TICK:  52 IP:   1 AR:   0 MEM_OUT:   0 INSTR: jz 4       TOS:  77 STACK: [0]
+  [DEBUG]  TICK:  54 IP:   2 AR:   0 MEM_OUT:   0 INSTR: print      TOS:  77 STACK: [0]
+  [DEBUG]  output: [73, 118, 97, 110, 32] << 77
+  [DEBUG]  TICK:  58 IP:   3 AR:   0 MEM_OUT:   0 INSTR: jmp 0      TOS:   0 STACK: []
+  [DEBUG]  TICK:  60 IP:   0 AR:   0 MEM_OUT:   0 INSTR: input      TOS:   0 STACK: []
+  [DEBUG]  input: 46
+  [DEBUG]  TICK:  62 IP:   1 AR:   0 MEM_OUT:   0 INSTR: jz 4       TOS:  46 STACK: [0]
+  [DEBUG]  TICK:  64 IP:   2 AR:   0 MEM_OUT:   0 INSTR: print      TOS:  46 STACK: [0]
+  [DEBUG]  output: [73, 118, 97, 110, 32, 77] << 46
+  [DEBUG]  TICK:  68 IP:   3 AR:   0 MEM_OUT:   0 INSTR: jmp 0      TOS:   0 STACK: []
+  [DEBUG]  TICK:  70 IP:   0 AR:   0 MEM_OUT:   0 INSTR: input      TOS:   0 STACK: []
   [WARNING]  input: EMPTY!
-  [DEBUG]  TICK:  32 IP:   1 AR:   0 MEM_OUT:   0 INSTR: jz 4       TOS:   0 STACK: [0]
-  [DEBUG]  TICK:  34 IP:   4 AR:   0 MEM_OUT:   0 INSTR: halt       TOS:   0 STACK: [0]
+  [DEBUG]  TICK:  72 IP:   1 AR:   0 MEM_OUT:   0 INSTR: jz 4       TOS:   0 STACK: [0]
+  [DEBUG]  TICK:  74 IP:   4 AR:   0 MEM_OUT:   0 INSTR: halt       TOS:   0 STACK: [0]
   [INFO]  Simulation ended!
-  [INFO]  output_buffer (string): foo
-  [INFO]  output_buffer (values): [102, 111, 111]
+  [INFO]  output_buffer (string): Ivan M.
+  [INFO]  output_buffer (values): [73, 118, 97, 110, 32, 77, 46]
   

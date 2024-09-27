@@ -24,7 +24,7 @@ in_source: |-
   end:
       halt
 in_stdin: |-
-  foo
+  Ivan M.
 out_code: |-
   [[13, 72, 101, 108, 108, 111, 44, 32, 87, 111, 114, 108, 100, 33],
    {"opcode": "push", "arg": 0, "term": [7, 4, "push string"]},
@@ -156,7 +156,7 @@ out_log: |
   [DEBUG]  TICK: 307 IP:   9 AR:   8 MEM_OUT:  87 INSTR: dup        TOS:   9 STACK: [0, 4]
   [DEBUG]  TICK: 309 IP:  10 AR:   8 MEM_OUT:  87 INSTR: push_by    TOS:   9 STACK: [0, 4, 9]
   [DEBUG]  TICK: 312 IP:  11 AR:   9 MEM_OUT: 111 INSTR: print      TOS: 111 STACK: [0, 4, 9]
-  [DEBUG]  output: [72, 101, 108, 108, 111, 44, 32, 87] << 111
+  [DEBUG]  output: [...72, 101, 108, 108, 111, 44, 32, 87] << 111
   [DEBUG]  TICK: 316 IP:  12 AR:   9 MEM_OUT: 111 INSTR: swap       TOS:   9 STACK: [0, 4]
   [DEBUG]  TICK: 321 IP:  13 AR:   9 MEM_OUT: 111 INSTR: jmp 3      TOS:   4 STACK: [0, 9]
   [DEBUG]  TICK: 323 IP:   3 AR:   9 MEM_OUT: 111 INSTR: jz 14      TOS:   4 STACK: [0, 9]
@@ -168,7 +168,7 @@ out_log: |
   [DEBUG]  TICK: 342 IP:   9 AR:   9 MEM_OUT: 111 INSTR: dup        TOS:  10 STACK: [0, 3]
   [DEBUG]  TICK: 344 IP:  10 AR:   9 MEM_OUT: 111 INSTR: push_by    TOS:  10 STACK: [0, 3, 10]
   [DEBUG]  TICK: 347 IP:  11 AR:  10 MEM_OUT: 114 INSTR: print      TOS: 114 STACK: [0, 3, 10]
-  [DEBUG]  output: [72, 101, 108, 108, 111, 44, 32, 87, 111] << 114
+  [DEBUG]  output: [...101, 108, 108, 111, 44, 32, 87, 111] << 114
   [DEBUG]  TICK: 351 IP:  12 AR:  10 MEM_OUT: 114 INSTR: swap       TOS:  10 STACK: [0, 3]
   [DEBUG]  TICK: 356 IP:  13 AR:  10 MEM_OUT: 114 INSTR: jmp 3      TOS:   3 STACK: [0, 10]
   [DEBUG]  TICK: 358 IP:   3 AR:  10 MEM_OUT: 114 INSTR: jz 14      TOS:   3 STACK: [0, 10]
@@ -180,7 +180,7 @@ out_log: |
   [DEBUG]  TICK: 377 IP:   9 AR:  10 MEM_OUT: 114 INSTR: dup        TOS:  11 STACK: [0, 2]
   [DEBUG]  TICK: 379 IP:  10 AR:  10 MEM_OUT: 114 INSTR: push_by    TOS:  11 STACK: [0, 2, 11]
   [DEBUG]  TICK: 382 IP:  11 AR:  11 MEM_OUT: 108 INSTR: print      TOS: 108 STACK: [0, 2, 11]
-  [DEBUG]  output: [72, 101, 108, 108, 111, 44, 32, 87, 111, 114] << 108
+  [DEBUG]  output: [...108, 108, 111, 44, 32, 87, 111, 114] << 108
   [DEBUG]  TICK: 386 IP:  12 AR:  11 MEM_OUT: 108 INSTR: swap       TOS:  11 STACK: [0, 2]
   [DEBUG]  TICK: 391 IP:  13 AR:  11 MEM_OUT: 108 INSTR: jmp 3      TOS:   2 STACK: [0, 11]
   [DEBUG]  TICK: 393 IP:   3 AR:  11 MEM_OUT: 108 INSTR: jz 14      TOS:   2 STACK: [0, 11]
@@ -192,7 +192,7 @@ out_log: |
   [DEBUG]  TICK: 412 IP:   9 AR:  11 MEM_OUT: 108 INSTR: dup        TOS:  12 STACK: [0, 1]
   [DEBUG]  TICK: 414 IP:  10 AR:  11 MEM_OUT: 108 INSTR: push_by    TOS:  12 STACK: [0, 1, 12]
   [DEBUG]  TICK: 417 IP:  11 AR:  12 MEM_OUT: 100 INSTR: print      TOS: 100 STACK: [0, 1, 12]
-  [DEBUG]  output: [72, 101, 108, 108, 111, 44, 32, 87, 111, 114, 108] << 100
+  [DEBUG]  output: [...108, 111, 44, 32, 87, 111, 114, 108] << 100
   [DEBUG]  TICK: 421 IP:  12 AR:  12 MEM_OUT: 100 INSTR: swap       TOS:  12 STACK: [0, 1]
   [DEBUG]  TICK: 426 IP:  13 AR:  12 MEM_OUT: 100 INSTR: jmp 3      TOS:   1 STACK: [0, 12]
   [DEBUG]  TICK: 428 IP:   3 AR:  12 MEM_OUT: 100 INSTR: jz 14      TOS:   1 STACK: [0, 12]
@@ -204,7 +204,7 @@ out_log: |
   [DEBUG]  TICK: 447 IP:   9 AR:  12 MEM_OUT: 100 INSTR: dup        TOS:  13 STACK: [0, 0]
   [DEBUG]  TICK: 449 IP:  10 AR:  12 MEM_OUT: 100 INSTR: push_by    TOS:  13 STACK: [0, 0, 13]
   [DEBUG]  TICK: 452 IP:  11 AR:  13 MEM_OUT:  33 INSTR: print      TOS:  33 STACK: [0, 0, 13]
-  [DEBUG]  output: [72, 101, 108, 108, 111, 44, 32, 87, 111, 114, 108, 100] << 33
+  [DEBUG]  output: [...111, 44, 32, 87, 111, 114, 108, 100] << 33
   [DEBUG]  TICK: 456 IP:  12 AR:  13 MEM_OUT:  33 INSTR: swap       TOS:  13 STACK: [0, 0]
   [DEBUG]  TICK: 461 IP:  13 AR:  13 MEM_OUT:  33 INSTR: jmp 3      TOS:   0 STACK: [0, 13]
   [DEBUG]  TICK: 463 IP:   3 AR:  13 MEM_OUT:  33 INSTR: jz 14      TOS:   0 STACK: [0, 13]

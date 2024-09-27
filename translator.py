@@ -14,7 +14,7 @@ from errors import (
 from isa import Opcode
 
 MACHINE_WORD_MASK = 0xFFFFFFFF
-MACHINE_WORD_MAX_POS = 0x0FFFFFFF
+MACHINE_WORD_MAX_POS = 0x7FFFFFFF
 
 LABEL_PATTERN = r"[a-zA-Z_][a-zA-Z0-9_]*:"
 LABEL_NAME_PATTERN = r"[a-zA-Z_][a-zA-Z0-9_]*"
