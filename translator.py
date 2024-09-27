@@ -326,5 +326,4 @@ if __name__ == "__main__":
 
         print("translation is succesful")
     except Exception as ex:
-        raise ex
         print(f"error: {ex.__class__.__name__}: {ex}\n")
