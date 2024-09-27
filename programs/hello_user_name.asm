@@ -35,6 +35,7 @@ end_question:
     push new_line_ch
     push_by
     print
+    push 0
     push name
     push 1
     add
@@ -44,7 +45,6 @@ reading:
     jz end_reading
     swap
     pop_by
-    swap
     push 1
     add
     swap
@@ -62,6 +62,8 @@ buf_overflow:
     jmp push_size
 end_reading:
     del_tos
+    del_tos
+    swap
 push_size:
     push name
     pop_by
