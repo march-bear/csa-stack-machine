@@ -213,7 +213,114 @@ label_name ::= <any of "a-z A-Z _"> { <any of "a-z A-Z 0-9 _"> }
     + любого другого исключения (в случае возникновения ошибки внутри модели)
 
 ## Тестирование
+Были разработаны следующие тесты:
++ [hello.yml](./golden/hello.yml) - печатает "Hello, World!"
++ [hello_user_name.yml](./golden/hello_user_name.yml) - запрашивает у пользователя его имя, считывает его, выводит на экран приветствие
++ [cat.yml](./golden/cat.yml) - печатает данные, поданные на вход симулятору через файл ввода
++ [prob2.yml](./golden/prob2.yml) - вычисляет сумму четных чисел Фибоначчи, не превышающих 4000000
++ [overflow.yml](./golden/overflow.yml) - выводит сумму 2^31 - 1 и 1, тест на переполнение типа
 
+Рассмотрим алгоритм [cat.asm](./programs/cat.asm):
+```
+loop:
+    input
+    jz end
+    print
+    jmp loop
+end:
+    halt
+```
+
+Трансляция алгоритма (имя целевого файла не указано, берется стандартное):
+```
+C:\Users\Ivan\csa-stack-machine> python .\translator.py .\programs\cat.asm
+input file: .\programs\cat.asm
+output file: .\programs\cat.asm.out
+LoC: 7 code_instr: 5
+
+translation is succesful
+```
+
+Полученный машинный код:
+```
+[{"opcode": "input", "term": [2, 4, "input"]},
+ {"opcode": "jz", "arg": 4, "term": [3, 4, "jz end"]},
+ {"opcode": "print", "term": [4, 4, "print"]},
+ {"opcode": "jmp", "arg": 0, "term": [5, 4, "jmp loop"]},
+ {"opcode": "halt", "term": [7, 4, "halt"]}]
+```
+
+Запуск кода на модели:
+```
+C:\Users\Ivan\csa-stack-machine> python .\machine.py .\programs\cat.asm.out .\programs\input.txt
+DEBUG:root:TICK:   0 IP:   0 AR:   0 MEM_OUT:   0 INSTR: input      TOS:   0 STACK: []
+DEBUG:root:input: 73
+DEBUG:root:TICK:   2 IP:   1 AR:   0 MEM_OUT:   0 INSTR: jz 4       TOS:  73 STACK: [0]
+DEBUG:root:TICK:   4 IP:   2 AR:   0 MEM_OUT:   0 INSTR: print      TOS:  73 STACK: [0]
+DEBUG:root:output: [] << 73
+DEBUG:root:TICK:   8 IP:   3 AR:   0 MEM_OUT:   0 INSTR: jmp 0      TOS:   0 STACK: []
+DEBUG:root:TICK:  10 IP:   0 AR:   0 MEM_OUT:   0 INSTR: input      TOS:   0 STACK: []
+DEBUG:root:input: 118
+DEBUG:root:TICK:  12 IP:   1 AR:   0 MEM_OUT:   0 INSTR: jz 4       TOS: 118 STACK: [0]
+DEBUG:root:TICK:  14 IP:   2 AR:   0 MEM_OUT:   0 INSTR: print      TOS: 118 STACK: [0]
+DEBUG:root:output: [73] << 118
+DEBUG:root:TICK:  18 IP:   3 AR:   0 MEM_OUT:   0 INSTR: jmp 0      TOS:   0 STACK: []
+DEBUG:root:TICK:  20 IP:   0 AR:   0 MEM_OUT:   0 INSTR: input      TOS:   0 STACK: []
+DEBUG:root:input: 97
+DEBUG:root:TICK:  22 IP:   1 AR:   0 MEM_OUT:   0 INSTR: jz 4       TOS:  97 STACK: [0]
+DEBUG:root:TICK:  24 IP:   2 AR:   0 MEM_OUT:   0 INSTR: print      TOS:  97 STACK: [0]
+DEBUG:root:output: [73, 118] << 97
+DEBUG:root:TICK:  28 IP:   3 AR:   0 MEM_OUT:   0 INSTR: jmp 0      TOS:   0 STACK: []
+DEBUG:root:TICK:  30 IP:   0 AR:   0 MEM_OUT:   0 INSTR: input      TOS:   0 STACK: []
+DEBUG:root:input: 110
+DEBUG:root:TICK:  32 IP:   1 AR:   0 MEM_OUT:   0 INSTR: jz 4       TOS: 110 STACK: [0]
+DEBUG:root:TICK:  34 IP:   2 AR:   0 MEM_OUT:   0 INSTR: print      TOS: 110 STACK: [0]
+DEBUG:root:output: [73, 118, 97] << 110
+DEBUG:root:TICK:  38 IP:   3 AR:   0 MEM_OUT:   0 INSTR: jmp 0      TOS:   0 STACK: []
+DEBUG:root:TICK:  40 IP:   0 AR:   0 MEM_OUT:   0 INSTR: input      TOS:   0 STACK: []
+DEBUG:root:input: 32
+DEBUG:root:TICK:  42 IP:   1 AR:   0 MEM_OUT:   0 INSTR: jz 4       TOS:  32 STACK: [0]
+DEBUG:root:TICK:  44 IP:   2 AR:   0 MEM_OUT:   0 INSTR: print      TOS:  32 STACK: [0]
+DEBUG:root:output: [73, 118, 97, 110] << 32
+DEBUG:root:TICK:  48 IP:   3 AR:   0 MEM_OUT:   0 INSTR: jmp 0      TOS:   0 STACK: []
+DEBUG:root:TICK:  50 IP:   0 AR:   0 MEM_OUT:   0 INSTR: input      TOS:   0 STACK: []
+DEBUG:root:input: 77
+DEBUG:root:TICK:  52 IP:   1 AR:   0 MEM_OUT:   0 INSTR: jz 4       TOS:  77 STACK: [0]
+DEBUG:root:TICK:  54 IP:   2 AR:   0 MEM_OUT:   0 INSTR: print      TOS:  77 STACK: [0]
+DEBUG:root:output: [73, 118, 97, 110, 32] << 77
+DEBUG:root:TICK:  58 IP:   3 AR:   0 MEM_OUT:   0 INSTR: jmp 0      TOS:   0 STACK: []
+DEBUG:root:TICK:  60 IP:   0 AR:   0 MEM_OUT:   0 INSTR: input      TOS:   0 STACK: []
+DEBUG:root:input: 46
+DEBUG:root:TICK:  62 IP:   1 AR:   0 MEM_OUT:   0 INSTR: jz 4       TOS:  46 STACK: [0]
+DEBUG:root:TICK:  64 IP:   2 AR:   0 MEM_OUT:   0 INSTR: print      TOS:  46 STACK: [0]
+DEBUG:root:output: [73, 118, 97, 110, 32, 77] << 46
+DEBUG:root:TICK:  68 IP:   3 AR:   0 MEM_OUT:   0 INSTR: jmp 0      TOS:   0 STACK: []
+DEBUG:root:TICK:  70 IP:   0 AR:   0 MEM_OUT:   0 INSTR: input      TOS:   0 STACK: []
+WARNING:root:input: EMPTY!
+DEBUG:root:TICK:  72 IP:   1 AR:   0 MEM_OUT:   0 INSTR: jz 4       TOS:   0 STACK: [0]
+DEBUG:root:TICK:  74 IP:   4 AR:   0 MEM_OUT:   0 INSTR: halt       TOS:   0 STACK: [0]
+INFO:root:Simulation ended!
+INFO:root:output_buffer (string): Ivan M.
+INFO:root:output_buffer (values): [73, 118, 97, 110, 32, 77, 46]
+output: Ivan M.
+DEBUG:root:TICK:  60 IP:   0 AR:   0 MEM_OUT:   0 INSTR: input      TOS:   0 STACK: []
+DEBUG:root:input: 46
+DEBUG:root:TICK:  62 IP:   1 AR:   0 MEM_OUT:   0 INSTR: jz 4       TOS:  46 STACK: [0]
+DEBUG:root:TICK:  64 IP:   2 AR:   0 MEM_OUT:   0 INSTR: print      TOS:  46 STACK: [0]
+DEBUG:root:output: [73, 118, 97, 110, 32, 77] << 46
+DEBUG:root:TICK:  68 IP:   3 AR:   0 MEM_OUT:   0 INSTR: jmp 0      TOS:   0 STACK: []
+DEBUG:root:TICK:  70 IP:   0 AR:   0 MEM_OUT:   0 INSTR: input      TOS:   0 STACK: []
+WARNING:root:input: EMPTY!
+DEBUG:root:TICK:  72 IP:   1 AR:   0 MEM_OUT:   0 INSTR: jz 4       TOS:   0 STACK: [0]
+DEBUG:root:TICK:  74 IP:   4 AR:   0 MEM_OUT:   0 INSTR: halt       TOS:   0 STACK: [0]
+INFO:root:Simulation ended!
+INFO:root:output_buffer (string): Ivan M.
+INFO:root:output_buffer (values): [73, 118, 97, 110, 32, 77, 46]
+output: Ivan M.
+instr_counter: 31 ticks: 75
+```
+
+Сводка по тестам:
 ```
 | ФИО                       | алг             | LoC  | code инстр. | инстр.   | такт.  |
 | Марухленко Иван Сергеевич | hello           | 24   | 15          | 148      | 466    |
