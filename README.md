@@ -320,6 +320,26 @@ output: Ivan M.
 instr_counter: 31 ticks: 75
 ```
 
+Запуск тестов:
+```
+C:\Users\Ivan\csa-stack-machine>poetry run pytest . -v
+=========================== test session starts ============================
+platform win32 -- Python 3.11.0, pytest-7.4.4, pluggy-1.5.0 -- C:\Users\Ivan\AppData\Local\Programs\Python\Python311\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\Ivan\csa-stack-machine
+configfile: pyproject.toml
+plugins: golden-0.2.2
+collected 5 items
+
+golden_test.py::test_translator_and_machine[golden/cat.yml] PASSED    [ 20%]
+golden_test.py::test_translator_and_machine[golden/hello.yml] PASSED  [ 40%]
+golden_test.py::test_translator_and_machine[golden/hello_user_name.yml] PASSED [ 60%]
+golden_test.py::test_translator_and_machine[golden/overflow.yml] PASSED [ 80%]
+golden_test.py::test_translator_and_machine[golden/prob2.yml] PASSED  [100%]
+
+============================ 5 passed in 0.47s =============================
+```
+
 Сводка по тестам:
 ```
 | ФИО                       | алг             | LoC  | code инстр. | инстр.   | такт.  |
