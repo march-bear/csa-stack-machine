@@ -5,10 +5,6 @@ import sys
 from controlunit import ControlUnit
 from datapath import Datapath
 
-DONE_EXIT_CODE = 0
-WRONG_SYS_ARGV_EXIT_CODE = 1
-SIMULATION_ERROR_EXIT_CODE = 2
-
 
 def simulation(program, input_tokens: list = []):
     if len(program) > 1 and isinstance(program[0], list):
@@ -39,11 +35,11 @@ def simulation(program, input_tokens: list = []):
         logging.info(f"output_buffer (values): {dp.output_buf}")
     except Exception:
         logging.exception("Found an error")
-        return SIMULATION_ERROR_EXIT_CODE, None
+        return [], 0, 0
 
     ticks = cu._tick
 
-    return DONE_EXIT_CODE, dp.output_buf.copy(), instr_counter, ticks
+    return dp.output_buf.copy(), instr_counter, ticks
 
 
 def main(target, input_stream) -> None:
@@ -59,7 +55,7 @@ def main(target, input_stream) -> None:
         with open(input_file) as ifile:
             input_tokens = ifile.read()
 
-    _, output_buf, instr_counter, ticks = simulation(program, [ord(ch) for ch in input_tokens])
+    output_buf, instr_counter, ticks = simulation(program, [ord(ch) for ch in input_tokens])
     if all(0 <= token < 0x110000 for token in output_buf):
         print("output:", "".join([chr(token) for token in output_buf]))
     else:
@@ -73,21 +69,9 @@ if __name__ == "__main__":
     args = sys.argv
     if (len(args)) not in (2, 3):
         logging.error("expected args: program_file [input_file]")
-        sys.exit(WRONG_SYS_ARGV_EXIT_CODE)
+        sys.exit(1)
 
     program_file = args[1]
     input_file = args[2] if (len(args) == 3) else None
 
-    with open(program_file) as pfile:
-        program_json = pfile.read()
-
-    program = json.loads(program_json)
-
-    input_tokens = []
-    if input_file is not None:
-        with open(input_file) as ifile:
-            input_tokens = ifile.read()
-
-    exit_code, _, _, _ = simulation(program, [ord(ch) for ch in input_tokens])
-
-    sys.exit(exit_code)
+    main(program_file, input_file)

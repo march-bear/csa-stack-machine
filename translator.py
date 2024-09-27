@@ -310,20 +310,9 @@ if __name__ == "__main__":
 
         print(f"input file: {input_file}")
         print(f"output file: {output_file}")
-        print()
 
-        with open(input_file) as ifile:
-            program = ifile.read()
+        main(input_file, output_file)
 
-        code = translate(program)
-
-        buf = []
-        for instr in code:
-            buf.append(json.dumps(instr))
-
-        with open(output_file, "w") as ofile:
-            ofile.write("[" + ",\n ".join(buf) + "]")
-
-        print("translation is succesful")
+        print("\ntranslation is succesful")
     except Exception as ex:
         print(f"error: {ex.__class__.__name__}: {ex}\n")
