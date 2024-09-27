@@ -22,12 +22,12 @@ INTEGER_PATTERN = r"\-?(?:0|[1-9][0-9]*)"
 STRING_DEFINITION_PATTERN = r"(?:\'[^\']*\'|\"[^\"]*\")"
 
 
-def raise_if_not(sel, err):
+def raise_if_not(sel, err) -> None:
     if not sel:
         raise err
 
 
-def int_to_int32(num: int):
+def int_to_int32(num: int) -> int:
     arg = num & MACHINE_WORD_MASK
     if arg > MACHINE_WORD_MAX_POS:
         arg -= MACHINE_WORD_MASK + 1
@@ -35,7 +35,7 @@ def int_to_int32(num: int):
     return arg
 
 
-def token_to_dict(token: str):
+def token_to_dict(token: str) -> dict:
     _list = token.split(maxsplit=1)
 
     match len(_list):
@@ -89,7 +89,7 @@ def token_to_dict(token: str):
             return {"statement": _list[0], "args": args, "is_label": False, "err": False}
 
 
-def translate_data_section(lines: list, first_line: int = 1):
+def translate_data_section(lines: list, first_line: int = 1) -> tuple[list, int, dict]:
     data = []
     labels = {}
     undef_label = {"name": None, "line": None, "addr": None}
@@ -147,7 +147,7 @@ def translate_data_section(lines: list, first_line: int = 1):
     raise NoSectionCodeError()
 
 
-def translate_code_section(lines: list, first_line: int = 0):
+def translate_code_section(lines: list, first_line: int = 0) -> tuple[list, dict]:
     instrs = []
     labels = {}
     undef_label = {"name": None, "addr": None, "line": None}
@@ -226,7 +226,7 @@ def translate_code_section(lines: list, first_line: int = 0):
     return instrs, labels
 
 
-def replace_label_names(code, instr_labels, data_labels):
+def replace_label_names(code: list, instr_labels: dict, data_labels: dict) -> None:
     if isinstance(code[0], list):
         first_instr = 1
     else:
@@ -247,7 +247,7 @@ def replace_label_names(code, instr_labels, data_labels):
                     instr["arg"] = data_labels[instr["arg"]]
 
 
-def translate_with_sections(lines: list):
+def translate_with_sections(lines: list) -> tuple[list, dict, dict]:
     data_list, cs_line, data_labels = translate_data_section(lines)
     assert cs_line != -1, "found `section .data` but not `section .code`"
     assert len(data_list) > 0, "section .data is empty"
@@ -260,12 +260,12 @@ def translate_with_sections(lines: list):
     return exec_file_data, instr_labels, data_labels
 
 
-def translate_without_sections(lines: list):
+def translate_without_sections(lines: list) -> tuple[list, dict, dict]:
     code, instr_labels = translate_code_section(lines)
     return code, instr_labels, {}
 
 
-def translate(program):
+def translate(program: str) -> list:
     lines = program.rstrip().split("\n")
     if len(lines) == 0:
         return []
@@ -279,7 +279,7 @@ def translate(program):
     return code
 
 
-def main(code, target):
+def main(code: str, target: str) -> None:
     try:
         input_file = code
         output_file = target

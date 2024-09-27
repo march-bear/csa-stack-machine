@@ -10,12 +10,12 @@ class Memory:
         for i in range(len(data)):
             self.mem[i] = data[i]
 
-    def read(self, addr):
+    def read(self, addr: int):
         assert 0 <= addr < self.size, f"out of memory: {addr}"
 
         return self.mem[addr]
 
-    def write(self, addr, value) -> None:
+    def write(self, addr: int, value) -> None:
         assert 0 <= addr < self.size, f"out of memory: {addr}"
 
         self.mem[addr] = value

@@ -38,7 +38,7 @@ class Datapath:
         self.alu_value = 0
         self.arg_value = 0
 
-    def alu(self, lsel: LAluSel, rsel: RAluSel, opsel: AluOpSel = AluOpSel.PLUS, modsel: AluModSel = AluModSel.NONE):
+    def alu(self, lsel: LAluSel, rsel: RAluSel, opsel: AluOpSel = AluOpSel.PLUS, modsel: AluModSel = AluModSel.NONE) -> None:
         left = self.stack.peek() if (lsel == LAluSel.STACK) else 0
         right = self.TOS if (rsel == RAluSel.TOS) else 0
 
@@ -48,7 +48,7 @@ class Datapath:
 
         self.alu_value = res % 2 if (modsel == AluModSel.MOD2) else res
 
-    def latch_tos(self, sel: TosInSel):
+    def latch_tos(self, sel: TosInSel) -> None:
         match sel:
             case TosInSel.ARG:
                 self.TOS = self.arg_value
@@ -69,7 +69,7 @@ class Datapath:
     def latch_br(self) -> None:
         self.BR = self.stack.peek()
 
-    def mem_oe(self):
+    def mem_oe(self) -> int:
         return self.data_mem.read(self.AR)
 
     def mem_wr(self) -> None:
@@ -86,10 +86,10 @@ class Datapath:
     def push_stack(self) -> None:
         self.stack.push(self.alu_value)
 
-    def is_tos_zero(self):
+    def is_tos_zero(self) -> bool:
         return self.TOS == 0
 
-    def is_tos_neg(self):
+    def is_tos_neg(self) -> bool:
         return self.TOS < 0
 
     def output(self) -> None:

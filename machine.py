@@ -6,7 +6,7 @@ from controlunit import ControlUnit
 from datapath import Datapath
 
 
-def simulation(program, input_tokens: list = []):
+def simulation(program: list, input_tokens: list = []) -> tuple[list, int, int]:
     if len(program) > 1 and isinstance(program[0], list):
         data = program[0]
         code = program[1:]

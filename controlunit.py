@@ -33,7 +33,7 @@ class ControlUnit:
             self.IP += 1
         self.tick()
 
-    def decode_and_execute_instruction(self):
+    def decode_and_execute_instruction(self) -> None:
         assert 0 <= self.IP < len(self.instr_mem), f"out of memory: {self.IP}"
         instr = self.instr_mem[self.IP]
 
@@ -154,7 +154,7 @@ class ControlUnit:
                 self.dp.latch_tos(TosInSel.INPUT)
                 self.tick()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "TICK: {:3} IP: {:3} AR: {:3} MEM_OUT: {:3} INSTR: {:10} TOS: {:3} STACK: {}".format(
             self._tick,
             self.IP,
