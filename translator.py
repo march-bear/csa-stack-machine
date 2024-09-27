@@ -297,7 +297,7 @@ def main(code, target):
             ofile.write("[" + ",\n ".join(buf) + "]")
 
         code_instr = len(code)
-        if (len(code) > 0 and isinstance(code[0], list)):
+        if len(code) > 0 and isinstance(code[0], list):
             code_instr -= 1
 
         print("LoC:", len(program.split("\n")), "code_instr:", code_instr)
