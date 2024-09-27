@@ -89,7 +89,7 @@ def token_to_dict(token: str) -> dict:
             return {"statement": _list[0], "args": args, "is_label": False, "err": False}
 
 
-def translate_data_section(lines: list, first_line: int = 1) -> tuple[list, int, dict]:
+def translate_data_section(lines: list, first_line: int = 1):
     data = []
     labels = {}
     undef_label = {"name": None, "line": None, "addr": None}
@@ -147,7 +147,7 @@ def translate_data_section(lines: list, first_line: int = 1) -> tuple[list, int,
     raise NoSectionCodeError()
 
 
-def translate_code_section(lines: list, first_line: int = 0) -> tuple[list, dict]:
+def translate_code_section(lines: list, first_line: int = 0):
     instrs = []
     labels = {}
     undef_label = {"name": None, "addr": None, "line": None}
@@ -247,7 +247,7 @@ def replace_label_names(code: list, instr_labels: dict, data_labels: dict) -> No
                     instr["arg"] = data_labels[instr["arg"]]
 
 
-def translate_with_sections(lines: list) -> tuple[list, dict, dict]:
+def translate_with_sections(lines: list):
     data_list, cs_line, data_labels = translate_data_section(lines)
     assert cs_line != -1, "found `section .data` but not `section .code`"
     assert len(data_list) > 0, "section .data is empty"
@@ -260,7 +260,7 @@ def translate_with_sections(lines: list) -> tuple[list, dict, dict]:
     return exec_file_data, instr_labels, data_labels
 
 
-def translate_without_sections(lines: list) -> tuple[list, dict, dict]:
+def translate_without_sections(lines: list):
     code, instr_labels = translate_code_section(lines)
     return code, instr_labels, {}
 
